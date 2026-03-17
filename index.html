@@ -4,7 +4,533 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monochrome Reader | Time and Consciousness</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ========== RESET & BASE ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #ffffff;
+            color: #000000;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+
+            /* منع التحديد والنسخ */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        body.dark-mode {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        body.dark-mode .login-card,
+        body.dark-mode .title-card,
+        body.dark-mode .reader-container,
+        body.dark-mode .sidebar,
+        body.dark-mode .comments-section,
+        body.dark-mode .font-controls,
+        body.dark-mode .back-link,
+        body.dark-mode .focus-back-button {
+            background: #000000;
+            color: #ffffff;
+            border-color: #ffffff;
+        }
+
+        body.dark-mode .login-input,
+        body.dark-mode .login-btn,
+        body.dark-mode .font-btn,
+        body.dark-mode .back-link,
+        body.dark-mode .focus-back-button {
+            background: #000000;
+            color: #ffffff;
+            border-color: #ffffff;
+        }
+
+        body.dark-mode .login-btn:hover,
+        body.dark-mode .font-btn:hover,
+        body.dark-mode .back-link:hover,
+        body.dark-mode .focus-back-button:hover {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        /* ===== UTILITY CLASSES ===== */
+        .hidden {
+            display: none !important;
+        }
+
+        .error-message {
+            color: #ff0000;
+            font-weight: 600;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        /* ===== LOGIN SECTION ===== */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .login-card {
+            max-width: 420px;
+            width: 100%;
+            background: #ffffff;
+            border: 2px solid #000000;
+            border-radius: 28px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
+        }
+
+        .login-card h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            border-left: 6px solid #000;
+            padding-left: 1rem;
+        }
+
+        .login-card p {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+
+        .login-input {
+            width: 100%;
+            background: #ffffff;
+            border: 2px solid #000000;
+            border-radius: 60px;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 1.2rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .login-input:focus {
+            background: #f6f6f6;
+        }
+
+        .login-btn {
+            width: 100%;
+            background: #000000;
+            color: #ffffff;
+            border: 2px solid #000000;
+            border-radius: 60px;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        .login-btn:hover {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        /* ===== MAIN LIBRARY SECTION ===== */
+        .library-header {
+            max-width: 1300px;
+            margin: 2rem auto 1rem;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .library-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            border-bottom: 3px solid #000;
+            padding-bottom: 0.3rem;
+        }
+
+        .dark-mode-toggle {
+            background: #ffffff;
+            border: 2px solid #000000;
+            border-radius: 40px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .dark-mode-toggle:hover {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        /* ===== TITLES GRID ===== */
+        .titles-grid {
+            max-width: 1300px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .title-card {
+            background: #ffffff;
+            border: 2px solid #000000;
+            border-radius: 24px;
+            padding: 1.8rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            box-shadow: 0 4px 0 #000;
+        }
+
+        .title-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 0 #000;
+        }
+
+        .title-card h3 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.3;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .title-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #333;
+            border-top: 1px solid #ccc;
+            padding-top: 0.8rem;
+            margin-top: 0.4rem;
+        }
+
+        .word-badge {
+            background: #000;
+            color: #fff;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+        }
+
+        /* ===== FULLSCREEN READER ===== */
+        .reader-container {
+            min-height: 100vh;
+            background: #ffffff;
+            padding: 2rem 10%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .reader-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .back-link {
+            background: none;
+            border: 2px solid #000;
+            color: #000;
+            padding: 0.7rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.15s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-link:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        .font-controls {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+            background: #f0f0f0;
+            padding: 0.4rem 0.8rem;
+            border-radius: 60px;
+            border: 2px solid #000;
+        }
+
+        .font-btn {
+            background: #fff;
+            border: 2px solid #000;
+            color: #000;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .font-btn:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        .font-percent {
+            font-weight: 600;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .reader-title {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            border-bottom: 4px solid #000;
+            padding-bottom: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .reader-content {
+            font-size: 1.3rem;
+            font-weight: 400;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-word;
+            flex: 1;
+        }
+
+        /* تنسيق الكلمات المميزة */
+        .highlighted-word {
+            text-decoration: underline;
+            text-decoration-thickness: 3px;
+            text-underline-offset: 4px;
+            cursor: pointer;
+            background-color: rgba(0,0,0,0.05);
+        }
+        body.dark-mode .highlighted-word {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .reader-footer {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* ===== SIDEBAR (bookmarks, toc) ===== */
+        .sidebar {
+            position: fixed;
+            top: 2rem;
+            right: 1rem;
+            width: 250px;
+            background: #ffffff;
+            border: 2px solid #000;
+            border-radius: 24px;
+            padding: 1.2rem;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar h3 {
+            font-size: 1.2rem;
+            border-bottom: 2px solid #000;
+            margin-bottom: 1rem;
+            padding-bottom: 0.3rem;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            padding: 0.3rem 0;
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .sidebar li:hover {
+            font-weight: 700;
+        }
+
+        .bookmark-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .remove-bookmark {
+            background: none;
+            border: 1px solid #000;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        /* ===== FOCUS MODE ===== */
+        body.focus-mode .reader-nav,
+        body.focus-mode .reader-footer,
+        body.focus-mode .sidebar,
+        body.focus-mode .focus-toggle {
+            display: none !important;
+        }
+
+        body.focus-mode .reader-container {
+            padding: 2rem 5%;
+        }
+
+        .focus-back-button {
+            display: none;
+            background: #ffffff;
+            border: 2px solid #000;
+            color: #000;
+            padding: 0.6rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+            align-self: flex-start;
+            transition: 0.15s;
+        }
+
+        .focus-back-button:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        body.focus-mode .focus-back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ===== COMMENTS SECTION ===== */
+        .comments-section {
+            margin-top: 2rem;
+            border-top: 2px solid #000;
+            padding-top: 1rem;
+        }
+
+        .comment-input {
+            width: 100%;
+            border: 2px solid #000;
+            border-radius: 20px;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        #addCommentBtn {
+            background: #000000;
+            color: #ffffff;
+            border: 2px solid #000000;
+            border-radius: 60px;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+            width: auto;
+            min-width: 200px;
+            display: inline-block;
+        }
+
+        #addCommentBtn:hover {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .comment-item {
+            border: 1px solid #000;
+            border-radius: 16px;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .delete-comment {
+            background: none;
+            border: 1px solid #000;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-comment:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        .focus-toggle {
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 40px;
+            padding: 0.5rem 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .focus-toggle:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        @media (max-width: 700px) {
+            .sidebar { display: none; }
+            .reader-container { padding: 2rem 1.5rem; }
+        }
+    </style>
 </head>
 <body>
     <!-- LOGIN SECTION -->
@@ -67,6 +593,585 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // ملف script.js المُعدل بالكامل (داخل HTML)
+        (function() {
+            // الكود السري العادي
+            const VALID_CODE = '1234';
+            const VALID_PASSWORD = '1234';
+            
+            // الكود السري الخاص للمقال الثالث
+            const SPECIAL_CODE = '5678';
+            const SPECIAL_PASSWORD = '5678';
+
+            // متغير لتحديد نوع الوصول
+            let isSpecialAccess = false;
+
+            // Anti-copy & screenshot
+            document.addEventListener('contextmenu', (e) => e.preventDefault());
+            document.addEventListener('keydown', (e) => {
+                if (
+                    e.key === 'PrintScreen' ||
+                    (e.ctrlKey && (e.key === 'c' || e.key === 'x' || e.key === 'a' || e.key === 'u' || e.key === 's')) ||
+                    e.key === 'F12'
+                ) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+            document.addEventListener('copy', (e) => e.preventDefault());
+            document.addEventListener('cut', (e) => e.preventDefault());
+            document.addEventListener('paste', (e) => e.preventDefault());
+            document.addEventListener('dragstart', (e) => e.preventDefault());
+            window.addEventListener('blur', () => { document.body.style.opacity = '0.5'; });
+            window.addEventListener('focus', () => { document.body.style.opacity = '1'; });
+
+            // المقالات مُدمجة في مصفوفة واحدة
+            const articles = [
+                {
+                    id: 1,
+                    title: 'الزمن والوعي والمنظور الكوني',
+                    content: `الزمن والوعي والمنظور الكوني
+
+1. وهم الزمن
+تخيل أنك تستيقظ في الصباح، تحضر قهوتك، وتخطط ليومك. بالنسبة لك، الزمن خطي: الماضي → الحاضر → المستقبل. لكن الفيزياء الحديثة تقول شيئًا مختلفًا.
+نظرية النسبية لألبرت أينشتاين تظهر أن الزمان والمكان ليسا كيانين منفصلين، بل يشكلان نسيجًا واحدًا يُعرف باسم الزمكان. في هذا الإطار، كل اللحظات — الماضي والحاضر والمستقبل — موجودة معًا، مثل لوحة كونية ضخمة. إحساسنا بالتحرك عبر الزمن هو مجرد وعينا يسير على خيط واحد من التجربة.
+
+قصة توضيحية:
+تخيل مكتبة. كل كتاب يمثل لحظة في حياتك. بالنسبة لك، تفتح كتابًا واحدًا في كل مرة (لحظتك الحالية). لكن كل الكتب — ذكريات الماضي وإمكانيات المستقبل — موجودة في نفس المكتبة، وأنت فقط لا تستطيع قراءتها كلها دفعة واحدة.
+
+2. المعرفة، الحرية، والمنظور الإلهي
+في الفلسفة والدين، هناك مفارقة مثيرة:
+في الإسلام، الله يعلم المستقبل، ومع ذلك الإنسان مخَيّر في أفعاله.
+من منظورنا البشري، المستقبل مجهول، لكنه موجود ضمن “مكتبة كونية” شاملة كل اللحظات.
+
+قصة توضيحية:
+تخيل لاعب شطرنج محترف يراقب مباراة شخص آخر. المحترف يرى كل حركة ونتائجها مسبقًا. لكن اللاعب لا يزال يختار حركاته بحرية. علم المحترف لا يجبر اللاعب على الاختيار؛ إنه مجرد رؤية لما سيحدث بالفعل.
+
+3. المنظور الكوني والوعي البشري
+إذا كان الزمكان كتلة واحدة ثابتة، فما معنى "الآن"؟ الفيزيائيون يعتقدون أن كل لحظة موجودة بنفس الدرجة من الحقيقة. وعينا هو الذي يخلق إحساس التدفق الزمني. بعض الفلاسفة يقارنون ذلك بفيلم سينمائي: كل الإطارات موجودة على الشريط، لكن العرض يمر عليها واحدًا تلو الآخر.
+
+هذا يقودنا إلى فكرة أن المستقبل ليس مكتوبًا بشكل حتمي بالمعنى التقليدي، لكنه موجود في مكان ما خارج إدراكنا. الاختيارات التي نتخذها "تحدد" المسار الذي نسلكه عبر الزمكان، لكن جميع المسارات موجودة في المشهد الكوني.
+
+4. تطبيقات في الفيزياء والفلسفة
+نظرية الكم تزيد الأمور تعقيدًا: الجسيمات لا توجد في حالة محددة حتى يتم قياسها. هل يمكن للوعي أن يلعب دورًا في تحديد الواقع؟ بعض العلماء يعتقدون أن الملاحظة الواعية تؤثر على الحالة الكمومية، مما يربط الوعي بنسيج الزمكان نفسه.
+
+في الفلسفة الإسلامية، يرى ابن سينا وابن رشد أن العلم الإلهي شامل لكل الأزمنة، لكنه لا ينفي حرية الإرادة. الله يعلم الاختيار الذي سنقوم به، لكننا نحن من نختاره.
+
+5. الخلاصة
+الزمن كما نعرفه قد يكون وهمًا ناتجًا عن محدودية وعينا. بينما تشير الفيزياء الحديثة إلى أن الكون كتلة واحدة متكاملة، تظل علاقتنا بالزمن لغزًا يربط بين العلم والدين والفلسفة. إحساسنا بالماضي والحاضر والمستقبل قد يكون مجرد طريقة لتنظيم تجربتنا في هذا الكون الواسع.`
+                },
+                {
+                    id: 2,
+                    title: 'نظريه اداره العقل ',
+                    content: `نظرية كرم لإدارة العقل
+(Karam Theory of Mind Management)
+بقلم: محمد كرم
+
+مقدمة فلسفية
+الإنسان يعتقد غالبًا أن عقله هو القائد المطلق لحياته، وأن الأفكار التي تظهر داخله هي الحقيقة النهائية التي يجب اتباعها. لكن التجربة والتأمل يكشفان شيئًا مختلفًا: العقل ليس القائد الأعلى، بل هو أداة.
+العقل يقترح، يحلل، ويتوقع… لكنه ليس دائمًا صائبًا.
+وفي لحظات كثيرة يبالغ في تقدير الخطر أو يقلل من قدرة الإنسان على الحل.
+من هنا تظهر فكرة أساسية:
+الإنسان ليس عقله، بل هو من يدير عقله.
+ومن هذا الفهم نشأت نظرية كرم لإدارة العقل، وهي تصور فلسفي يرى أن النفس البشرية تعمل كنظام إداري مكوَّن من أربعة عناصر رئيسية، وأن جودة الحياة تعتمد على طريقة إدارة هذا النظام.
+
+نموذج الشركة في نظرية كرم
+ترى النظرية أن الإنسان يشبه شركة داخلية تعمل باستمرار، وتتكون من أربعة مستويات:
+1. صاحب الشركة (الوعي)
+وهو الإنسان الحقيقي الذي يمتلك القدرة على اتخاذ القرار النهائي.
+صاحب الشركة لا يتكلم كثيرًا، لكنه يملك السلطة العليا.
+مشكلته أن كثيرًا من الناس يتركون الإدارة بالكامل للعقل دون مراجعة.
+2. مدير الشركة (العقل)
+العقل هو المدير التنفيذي.
+وظيفته:
+تحليل المواقف
+توقع النتائج
+اقتراح الحلول
+لكن المدير ليس معصومًا من الخطأ.
+أحيانًا يبالغ في المخاطر، أو يتسرع في الاستنتاجات.
+3. العمال (المشاعر)
+العمال هم المشاعر.
+مثل:
+الفرح
+الحزن
+القلق
+الثقة
+الحماس
+المشاعر ليست سبب القرار… بل نتيجة القرار.
+فعندما تكون قرارات الإدارة سيئة، تنتشر العمالة السلبية داخل الشركة.
+4. غرفة الاجتماع (التفكير الواعي)
+وهي أهم عنصر في النظرية.
+غرفة الاجتماع هي لحظة التوقف والتفكير قبل التصديق التلقائي لأفكار العقل.
+في هذه الغرفة يراجع صاحب الشركة أفكار المدير قبل تنفيذها.
+
+المبادئ الأساسية لنظرية كرم
+المبدأ الأول
+العقل ليس الحقيقة المطلقة
+الأفكار التي تظهر في العقل ليست دائمًا صحيحة.
+العقل أحيانًا:
+يبالغ في الخوف
+يتوقع الأسوأ
+يختصر الطريق إلى التشاؤم
+لذلك يجب مراجعة أفكار العقل بدل قبولها مباشرة.
+
+المبدأ الثاني
+المشاعر نتيجة وليست سببًا
+المشاعر لا تظهر من فراغ.
+هي نتيجة لما يحدث داخل الإدارة العقلية.
+إذا كانت الأفكار سلبية → المشاعر ستكون سلبية.
+إذا كانت الأفكار واقعية وبنّاءة → المشاعر تتحسن.
+
+المبدأ الثالث
+الاستسلام أخطر قرار إداري
+أكثر خطأ يرتكبه صاحب الشركة هو أن يقول:
+لا يوجد حل.
+هذه الجملة تعني إغلاق باب التفكير، مما يجعل المدير يعلن الفشل للعمال.
+وعندها تنتشر مشاعر مثل:
+الإحباط
+القلق
+فقدان الثقة
+
+المبدأ الرابع
+كل مشكلة تستحق اجتماعًا
+عندما يعرض العقل مشكلة، يجب نقلها إلى غرفة الاجتماع.
+وهناك تُطرح أربعة أسئلة:
+هل المشكلة حقيقية أم مجرد خوف؟
+ما الحلول الممكنة؟
+ما أسوأ احتمال؟ وهل يمكن التعامل معه؟
+ما أفضل خطوة يمكن تنفيذها الآن؟
+هذه الأسئلة تعيد السيطرة لصاحب الشركة.
+
+المبدأ الخامس
+القيادة الواعية للعقل
+الحياة الناجحة لا تعني غياب المشاكل، بل تعني إدارة المشاكل بوعي.
+الشخص الناجح ليس من يملك عقلًا لا يخطئ،
+بل من يعرف كيف يقود عقله عندما يخطئ.
+
+مثال تطبيقي
+تخيل طالبًا يواجه امتحانًا صعبًا.
+العقل يقول:
+الامتحان صعب… ربما سنفشل.
+إذا استسلم صاحب الشركة:
+ينتشر الخوف
+تقل الطاقة
+يضعف الأداء
+لكن إذا عقد اجتماعًا:
+يكتشف أن الوقت ما زال موجودًا
+يمكن تقسيم المذاكرة
+يمكن البدء الآن
+فتظهر مشاعر مختلفة:
+الثقة
+الهدوء
+التركيز
+وهنا تتغير النتائج.
+
+الخلاصة الفلسفية للنظرية
+الإنسان لا يعيش فقط في العالم الخارجي…
+بل يعيش أيضًا داخل نظام إداري عقلي.
+هذا النظام قد يقودك نحو:
+القلق
+الاستسلام
+الفشل
+أو يقودك نحو:
+الوضوح
+الثقة
+النجاح
+والفرق بين الحالتين ليس في الظروف…
+بل في طريقة إدارة العقل.
+وهذا ما تسميه هذه الفلسفة:
+نظرية كرم لإدارة العقل`
+                },
+                {
+                    id: 3,
+                    title: 'جمل فلسفيه بتاليفي',
+                    content: `المنطق والحدس: ازدواجية المعرفة
+
+1-إن تكررت الخسارة فليست خسارة، بل زمنٌ لم يُحسم بعد؛
+وكل حكمٍ وُلد قبل نهايته… كان هو الخسارة.`
+                }
+            ];
+
+            // State
+            let currentArticle = null;
+            let fontSize = 1.3;
+            let bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || {};
+            let comments = JSON.parse(localStorage.getItem('comments')) || {};
+            let lastRead = JSON.parse(localStorage.getItem('lastRead')) || {};
+            let highlights = JSON.parse(localStorage.getItem('highlights')) || {};
+
+            // DOM elements
+            const loginSection = document.getElementById('loginSection');
+            const mainSection = document.getElementById('mainSection');
+            const loginBtn = document.getElementById('loginBtn');
+            const codeInput = document.getElementById('codeInput');
+            const passwordInput = document.getElementById('passwordInput');
+            const loginError = document.getElementById('loginError');
+
+            const titlesContainer = document.getElementById('titlesContainer');
+            const readerSection = document.getElementById('readerSection');
+            const backToLibraryBtn = document.getElementById('backToLibraryBtn');
+            const backToLibraryBtn2 = document.getElementById('backToLibraryBtn2');
+            const focusBackBtn = document.getElementById('focusBackBtn');
+            const readerTitle = document.getElementById('readerTitle');
+            const readerContent = document.getElementById('readerContent');
+            const decreaseFont = document.getElementById('decreaseFont');
+            const increaseFont = document.getElementById('increaseFont');
+            const fontPercent = document.getElementById('fontPercent');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const focusToggle = document.getElementById('focusToggle');
+            const sidebar = document.getElementById('sidebar');
+            const bookmarkList = document.getElementById('bookmarkList');
+            const addBookmarkBtn = document.getElementById('addBookmarkBtn');
+            const tocList = document.getElementById('tocList');
+            const commentInput = document.getElementById('commentInput');
+            const addCommentBtn = document.getElementById('addCommentBtn');
+            const commentsList = document.getElementById('commentsList');
+
+            // Helper functions
+            function countWords(str) {
+                return str.split(/\s+/).filter(w => w.length > 0).length;
+            }
+
+            // تعديل دالة renderTitles لإظهار المقالات بناءً على الوصول
+            function renderTitles() {
+                titlesContainer.innerHTML = '';
+                
+                // تصفية المقالات: إذا كان وصول خاص، أظهر الكل، وإلا أظهر المقالين الأولين فقط
+                const articlesToShow = isSpecialAccess 
+                    ? articles 
+                    : articles.filter(article => article.id !== 3); // استثناء المقال الثالث
+                
+                articlesToShow.forEach(article => {
+                    const card = document.createElement('div');
+                    card.className = 'title-card';
+                    card.setAttribute('data-id', article.id);
+                    const wordCount = countWords(article.content);
+                    card.innerHTML = `
+                        <h3>${article.title}</h3>
+                        <div class="title-meta">
+                            <span>${wordCount} words</span>
+                            <span class="word-badge">read</span>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => openArticle(article));
+                    titlesContainer.appendChild(card);
+                });
+            }
+
+            function renderBookmarks() {
+                if (!currentArticle) return;
+                const articleBookmarks = bookmarks[currentArticle.id] || [];
+                bookmarkList.innerHTML = '';
+                articleBookmarks.forEach((bm, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'bookmark-item';
+                    li.innerHTML = `
+                        <span>${bm.text.substring(0, 30)}...</span>
+                        <button class="remove-bookmark" data-index="${index}">✕</button>
+                    `;
+                    li.querySelector('.remove-bookmark').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        articleBookmarks.splice(index, 1);
+                        bookmarks[currentArticle.id] = articleBookmarks;
+                        localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+                        renderBookmarks();
+                    });
+                    li.addEventListener('click', () => {
+                        readerContent.scrollTop = bm.scroll;
+                    });
+                    bookmarkList.appendChild(li);
+                });
+            }
+
+            function renderTOC(content) {
+                const lines = content.split('\n');
+                const headings = [];
+                lines.forEach((line, index) => {
+                    if (line.match(/^[0-9]+\.\s/) && line.trim().length > 0) {
+                        headings.push({ text: line.trim(), position: index });
+                    }
+                });
+                tocList.innerHTML = '';
+                headings.forEach(h => {
+                    const li = document.createElement('li');
+                    li.textContent = h.text;
+                    li.addEventListener('click', () => {
+                        const targetLine = h.position;
+                        const lines = readerContent.textContent.split('\n');
+                        let offset = 0;
+                        for (let i = 0; i < targetLine; i++) {
+                            offset += lines[i].length * 0.5;
+                        }
+                        readerContent.scrollTop = offset * 10;
+                    });
+                    tocList.appendChild(li);
+                });
+            }
+
+            function renderComments() {
+                if (!currentArticle) return;
+                const articleComments = comments[currentArticle.id] || [];
+                commentsList.innerHTML = '';
+                articleComments.forEach((c, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'comment-item';
+                    div.innerHTML = `
+                        <span>${c.text}</span>
+                        <button class="delete-comment" data-index="${index}">✕</button>
+                    `;
+                    div.querySelector('.delete-comment').addEventListener('click', () => {
+                        articleComments.splice(index, 1);
+                        comments[currentArticle.id] = articleComments;
+                        localStorage.setItem('comments', JSON.stringify(comments));
+                        renderComments();
+                    });
+                    commentsList.appendChild(div);
+                });
+            }
+
+            function addComment() {
+                if (!currentArticle) return;
+                const text = commentInput.value.trim();
+                if (!text) return;
+                if (!comments[currentArticle.id]) comments[currentArticle.id] = [];
+                comments[currentArticle.id].push({ text, date: new Date().toISOString() });
+                localStorage.setItem('comments', JSON.stringify(comments));
+                commentInput.value = '';
+                renderComments();
+            }
+
+            function addBookmark() {
+                if (!currentArticle) return;
+                const scroll = readerContent.scrollTop;
+                const text = readerContent.textContent.substring(scroll, scroll + 100).trim();
+                if (!bookmarks[currentArticle.id]) bookmarks[currentArticle.id] = [];
+                bookmarks[currentArticle.id].push({ text, scroll });
+                localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+                renderBookmarks();
+            }
+
+            function applyFontSize() {
+                if (readerContent) {
+                    readerContent.style.fontSize = fontSize + 'rem';
+                }
+            }
+
+            function updateFontPercent() {
+                const percent = Math.round((fontSize / 1.3) * 100);
+                fontPercent.textContent = percent + '%';
+            }
+
+            // Highlight functions
+            function getWordAtClick(event) {
+                const range = document.caretRangeFromPoint(event.clientX, event.clientY);
+                if (!range) return null;
+                range.expand('word');
+                return range;
+            }
+
+            function addHighlightFromClick(event) {
+                if (!currentArticle) return;
+                const range = getWordAtClick(event);
+                if (!range) return;
+                const start = range.startOffset;
+                const end = range.endOffset;
+                const text = range.toString().trim();
+                if (!text) return;
+
+                if (!highlights[currentArticle.id]) highlights[currentArticle.id] = [];
+                const exists = highlights[currentArticle.id].some(h => h.start === start && h.end === end);
+                if (!exists) {
+                    highlights[currentArticle.id].push({ start, end, text });
+                    highlights[currentArticle.id].sort((a,b) => a.start - b.start);
+                    localStorage.setItem('highlights', JSON.stringify(highlights));
+                    applyHighlightsToContent();
+                }
+            }
+
+            function removeHighlight(start, end) {
+                if (!currentArticle) return;
+                const articleHighlights = highlights[currentArticle.id] || [];
+                const index = articleHighlights.findIndex(h => h.start === start && h.end === end);
+                if (index !== -1) {
+                    articleHighlights.splice(index, 1);
+                    highlights[currentArticle.id] = articleHighlights;
+                    localStorage.setItem('highlights', JSON.stringify(highlights));
+                    applyHighlightsToContent();
+                }
+            }
+
+            function applyHighlightsToContent() {
+                if (!currentArticle) return;
+                const originalText = currentArticle.content;
+                const articleHighlights = highlights[currentArticle.id] || [];
+
+                if (articleHighlights.length === 0) {
+                    readerContent.textContent = originalText;
+                    readerContent.style.fontSize = fontSize + 'rem';
+                    return;
+                }
+
+                let result = '';
+                let lastIndex = 0;
+                articleHighlights.forEach(h => {
+                    result += escapeHtml(originalText.substring(lastIndex, h.start));
+                    const word = originalText.substring(h.start, h.end);
+                    result += `<span class="highlighted-word" data-start="${h.start}" data-end="${h.end}">${escapeHtml(word)}</span>`;
+                    lastIndex = h.end;
+                });
+                result += escapeHtml(originalText.substring(lastIndex));
+
+                readerContent.innerHTML = result;
+                readerContent.style.fontSize = fontSize + 'rem';
+
+                document.querySelectorAll('.highlighted-word').forEach(span => {
+                    span.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const start = parseInt(span.dataset.start);
+                        const end = parseInt(span.dataset.end);
+                        removeHighlight(start, end);
+                    });
+                });
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // Navigation
+            function showLibrary() {
+                if (currentArticle) {
+                    lastRead[currentArticle.id] = readerContent.scrollTop;
+                    localStorage.setItem('lastRead', JSON.stringify(lastRead));
+                }
+                readerSection.classList.add('hidden');
+                sidebar.classList.add('hidden');
+                document.querySelector('.library-header').classList.remove('hidden');
+                titlesContainer.classList.remove('hidden');
+                currentArticle = null;
+            }
+
+            function showReader(article) {
+                currentArticle = article;
+                readerTitle.textContent = article.title;
+                applyHighlightsToContent();
+
+                if (lastRead[article.id]) {
+                    setTimeout(() => {
+                        readerContent.scrollTop = lastRead[article.id];
+                    }, 100);
+                } else {
+                    const articleHighlights = highlights[article.id] || [];
+                    if (articleHighlights.length > 0) {
+                        setTimeout(() => {
+                            const estimatedScroll = articleHighlights[0].start * 0.5;
+                            readerContent.scrollTop = estimatedScroll;
+                        }, 150);
+                    }
+                }
+
+                renderBookmarks();
+                renderTOC(article.content);
+                renderComments();
+
+                document.querySelector('.library-header').classList.add('hidden');
+                titlesContainer.classList.add('hidden');
+                readerSection.classList.remove('hidden');
+                sidebar.classList.remove('hidden');
+            }
+
+            function openArticle(article) {
+                showReader(article);
+            }
+
+            function closeReader() {
+                showLibrary();
+            }
+
+            // Click on text to add highlight
+            if (readerContent) {
+                readerContent.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('highlighted-word')) return;
+                    addHighlightFromClick(e);
+                });
+            }
+
+            // Event listeners
+            // تعديل معالج حدث النقر على زر الدخول
+            loginBtn.addEventListener('click', () => {
+                const enteredCode = codeInput.value;
+                const enteredPassword = passwordInput.value;
+
+                // التحقق من الوصول الخاص أولاً
+                if (enteredCode === SPECIAL_CODE && enteredPassword === SPECIAL_PASSWORD) {
+                    isSpecialAccess = true;
+                    loginSection.classList.add('hidden');
+                    mainSection.classList.remove('hidden');
+                    loginError.classList.add('hidden');
+                    codeInput.value = '';
+                    passwordInput.value = '';
+                    renderTitles(); // إعادة رسم العناوين بعد الدخول الخاص
+                }
+                // ثم التحقق من الوصول العادي
+                else if (enteredCode === VALID_CODE && enteredPassword === VALID_PASSWORD) {
+                    isSpecialAccess = false;
+                    loginSection.classList.add('hidden');
+                    mainSection.classList.remove('hidden');
+                    loginError.classList.add('hidden');
+                    codeInput.value = '';
+                    passwordInput.value = '';
+                    renderTitles(); // إعادة رسم العناوين بعد الدخول العادي
+                } else {
+                    loginError.classList.remove('hidden');
+                }
+            });
+
+            [codeInput, passwordInput].forEach(inp => {
+                inp.addEventListener('keypress', e => {
+                    if (e.key === 'Enter') loginBtn.click();
+                });
+                inp.addEventListener('input', () => loginError.classList.add('hidden'));
+            });
+
+            backToLibraryBtn.addEventListener('click', closeReader);
+            backToLibraryBtn2.addEventListener('click', closeReader);
+            focusBackBtn.addEventListener('click', closeReader);
+
+            decreaseFont.addEventListener('click', () => {
+                if (fontSize > 0.8) {
+                    fontSize = Math.max(0.8, fontSize - 0.1);
+                    applyFontSize();
+                    updateFontPercent();
+                }
+            });
+
+            increaseFont.addEventListener('click', () => {
+                if (fontSize < 2.5) {
+                    fontSize = Math.min(2.5, fontSize + 0.1);
+                    applyFontSize();
+                    updateFontPercent();
+                }
+            });
+
+            darkModeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                darkModeToggle.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
+            });
+
+            focusToggle.addEventListener('click', () => {
+                document.body.classList.toggle('focus-mode');
+                focusToggle.textContent = document.body.classList.contains('focus-mode') ? 'Exit Focus' : 'Focus';
+            });
+
+            addBookmarkBtn.addEventListener('click', addBookmark);
+            addCommentBtn.addEventListener('click', addComment);
+
+            // Initialize (سيتم استدعاء renderTitles بعد تسجيل الدخول، لكن يمكن تركها هنا للبدء)
+            // renderTitles(); // لا نستدعيها هنا لأنها ستعرض المقالات قبل تسجيل الدخول، لكننا نستدعيها بعد الدخول فقط
+        })();
+    </script>
 </body>
 </html>
