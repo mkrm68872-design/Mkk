@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monochrome Reader | Time and Consciousness</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- LOGIN SECTION -->
+    <div id="loginSection" class="login-container">
+        <div class="login-card">
+            <h1>ACCESS</h1>
+            <p>Enter code & password to continue.</p>
+            <input type="text" id="codeInput" class="login-input" placeholder="Code" inputmode="numeric">
+            <input type="password" id="passwordInput" class="login-input" placeholder="Password" inputmode="numeric">
+            <button id="loginBtn" class="login-btn">→ Enter</button>
+            <div id="loginError" class="error-message hidden">Incorrect code or password</div>
+        </div>
+    </div>
+
+    <!-- MAIN SECTION (after login) -->
+    <div id="mainSection" class="hidden">
+        <div class="library-header">
+            <h1>LIBRARY</h1>
+            <button class="dark-mode-toggle" id="darkModeToggle">Dark Mode</button>
+        </div>
+
+        <div class="titles-grid" id="titlesContainer"></div>
+
+        <!-- Fullscreen Reader -->
+        <div id="readerSection" class="hidden">
+            <div class="reader-container">
+                <button class="focus-back-button" id="focusBackBtn">← Back to library</button>
+                <div class="reader-nav">
+                    <button class="back-link" id="backToLibraryBtn">← All titles</button>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="focus-toggle" id="focusToggle">Focus</button>
+                        <div class="font-controls">
+                            <button class="font-btn" id="decreaseFont">−</button>
+                            <span class="font-percent" id="fontPercent">100%</span>
+                            <button class="font-btn" id="increaseFont">+</button>
+                        </div>
+                    </div>
+                </div>
+                <h2 class="reader-title" id="readerTitle"></h2>
+                <div class="reader-content" id="readerContent"></div>
+                <div class="comments-section" id="commentsSection">
+                    <h3>Private Comments</h3>
+                    <textarea class="comment-input" id="commentInput" placeholder="Write your comment..." rows="2"></textarea>
+                    <button id="addCommentBtn">Add Comment</button>
+                    <div id="commentsList"></div>
+                </div>
+                <div class="reader-footer">
+                    <button class="back-link" id="backToLibraryBtn2">← Back to library</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <h3>Bookmarks</h3>
+            <ul id="bookmarkList"></ul>
+            <button id="addBookmarkBtn">+ Add Bookmark</button>
+            <h3 style="margin-top: 1.5rem;">Table of Contents</h3>
+            <ul id="tocList"></ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
