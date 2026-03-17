@@ -1,7 +1,7 @@
 // ملف script.js المُصحح
 (function() {
-    const VALID_CODE = '1234';
-    const VALID_PASSWORD = '1234';
+    const VALID_CODE = '1234##@@';
+    const VALID_PASSWORD = '123455';
 
     // Anti-copy & screenshot
     document.addEventListener('contextmenu', (e) => e.preventDefault());
