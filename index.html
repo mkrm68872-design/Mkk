@@ -2,1082 +2,737 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محرر الصور الذكي - AI Photo Studio</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@imgly/background-removal@1.5.5/dist/background-removal.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        cairo: ['Cairo', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: '#6366f1',
-                        secondary: '#a855f7',
-                        accent: '#ec4899',
-                        dark: '#0f172a',
-                        darker: '#020617',
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'shimmer': 'shimmer 2s linear infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-20px)' },
-                        },
-                        shimmer: {
-                            '0%': { backgroundPosition: '-1000px 0' },
-                            '100%': { backgroundPosition: '1000px 0' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>منصة تعليمية متكاملة | تعلم الآن</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
         body {
-            font-family: 'Cairo', sans-serif;
-            background: #020617;
-            overflow-x: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
-        
-        .glass {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.95);
+            border-radius: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            overflow: hidden;
+            min-height: 90vh;
         }
-        
-        .glass-light {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+
+        /* Header */
+        .header {
+            background: #2d3748;
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
-        
-        .gradient-text {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
             background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        
-        .gradient-bg {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 20px;
+            border-radius: 50px;
         }
-        
-        .mesh-gradient {
-            background: 
-                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, rgba(99, 102, 241, 0.15) 0px, transparent 50%);
-        }
-        
-        .drop-zone {
-            border: 2px dashed rgba(99, 102, 241, 0.3);
-            transition: all 0.3s ease;
-        }
-        
-        .drop-zone.dragover {
-            border-color: #6366f1;
-            background: rgba(99, 102, 241, 0.1);
-            transform: scale(1.02);
-        }
-        
-        .slider-thumb::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #6366f1, #a855f7);
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
-        }
-        
-        .slider-thumb::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #6366f1, #a855f7);
-            cursor: pointer;
+
+        .btn-logout {
+            background: #e53e3e;
             border: none;
-            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
-        }
-        
-        .bg-pattern {
-            background-image: 
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-        }
-        
-        .loader {
-            width: 48px;
-            height: 48px;
-            border: 3px solid rgba(99, 102, 241, 0.3);
-            border-radius: 50%;
-            display: inline-block;
-            position: relative;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
-        }
-        
-        .loader::after {
-            content: '';  
-            box-sizing: border-box;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 3px solid transparent;
-            border-bottom-color: #6366f1;
-        }
-        
-        @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .comparison-slider {
-            position: relative;
-            overflow: hidden;
-            cursor: ew-resize;
-        }
-        
-        .comparison-slider .before {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 50%;
-            height: 100%;
-            overflow: hidden;
-            border-right: 2px solid #6366f1;
-        }
-        
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(99, 102, 241, 0.5);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-        
-        .btn-glow:hover {
-            box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
-        }
-        
-        .preset-bg {
-            transition: all 0.3s ease;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
             cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
         }
-        
-        .preset-bg:hover {
+
+        .btn-logout:hover {
+            background: #c53030;
             transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
         }
-        
-        .preset-bg.active {
-            ring: 2px solid #6366f1;
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+
+        /* Main Content */
+        .main-content {
+            padding: 30px;
         }
-        
-        canvas {
-            max-width: 100%;
-            height: auto;
+
+        /* Forms */
+        .form-container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .form-container h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2d3748;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .toggle-form {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .toggle-form span {
+            color: #667eea;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Cards */
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .course-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .course-image {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        .course-info {
+            padding: 20px;
+        }
+
+        .course-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .course-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .locked {
+            background: #e2e8f0;
+            color: #718096;
+        }
+
+        .purchase-btn {
+            background: #48bb78;
+            width: auto;
+            padding: 8px 20px;
+            font-size: 14px;
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .admin-section {
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 20px;
+        }
+
+        .students-table {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f7fafc;
+            font-weight: 800;
+        }
+
+        .admin-btn {
+            width: auto;
+            padding: 5px 12px;
+            font-size: 12px;
+            margin: 2px;
+            display: inline-block;
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+        }
+
+        .btn-warning {
+            background: #ed8936;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-paid {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge-free {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        @media (max-width: 768px) {
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
-<body class="text-white min-h-screen bg-pattern mesh-gradient">
+<body>
 
-    <!-- Background Particles -->
-    <div id="particles" class="fixed inset-0 pointer-events-none z-0"></div>
-
+<div class="container" id="app">
     <!-- Header -->
-    <header class="fixed top-0 w-full z-50 glass border-b border-white/10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center shadow-lg shadow-primary/30">
-                        <i class="fas fa-wand-magic-sparkles text-white text-lg"></i>
-                    </div>
-                    <span class="text-xl font-bold gradient-text">AI Photo Studio</span>
-                </div>
-                <nav class="hidden md:flex items-center gap-6">
-                    <a href="#features" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">المميزات</a>
-                    <a href="#editor" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">المحرر</a>
-                    <a href="#how-it-works" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">كيف يعمل</a>
-                </nav>
-                <button onclick="scrollToEditor()" class="gradient-bg px-6 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-opacity btn-glow">
-                    جرب الآن مجاناً
-                </button>
-            </div>
-        </div>
-    </header>
+    <div class="header">
+        <div class="logo">📚 منصة تعليمية | أكاديمية النجاح</div>
+        <div id="userHeaderInfo"></div>
+    </div>
 
-    <!-- Hero Section -->
-    <section class="relative pt-32 pb-20 px-4 overflow-hidden">
-        <div class="max-w-7xl mx-auto text-center relative z-10">
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-light mb-8 animate-float">
-                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                <span class="text-sm text-gray-300">يعمل بالكامل في المتصفح - لا يحتاج API</span>
-            </div>
-            
-            <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight">
-                <span class="block text-white">حوّل صورك</span>
-                <span class="block gradient-text">بقوة الذكاء الاصطناعي</span>
-            </h1>
-            
-            <p class="text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                أزل الخلفية، غيّر الإضاءة، وطبّق تأثيرات احترافية على صورك في ثوانٍ. كل المعالجة تتم محلياً في متصفحك لضمان الخصوصية التامة.
-            </p>
-            
-            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-                <button onclick="scrollToEditor()" class="gradient-bg px-8 py-4 rounded-2xl text-lg font-bold hover:opacity-90 transition-all btn-glow flex items-center justify-center gap-2">
-                    <i class="fas fa-upload"></i>
-                    ارفع صورتك الآن
-                </button>
-                <button onclick="loadDemo()" class="glass px-8 py-4 rounded-2xl text-lg font-bold hover:bg-white/10 transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-play"></i>
-                    شاهد العرض التجريبي
-                </button>
-            </div>
+    <div class="main-content" id="mainContent"></div>
+</div>
 
-            <!-- Stats -->
-            <div class="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
-                <div class="glass-light rounded-2xl p-4">
-                    <div class="text-3xl font-bold gradient-text">0</div>
-                    <div class="text-sm text-gray-400">تكلفة API</div>
-                </div>
-                <div class="glass-light rounded-2xl p-4">
-                    <div class="text-3xl font-bold gradient-text">100%</div>
-                    <div class="text-sm text-gray-400">خصوصية</div>
-                </div>
-                <div class="glass-light rounded-2xl p-4">
-                    <div class="text-3xl font-bold gradient-text">5s</div>
-                    <div class="text-sm text-gray-400">سرعة المعالجة</div>
-                </div>
-            </div>
-        </div>
-    </section>
+<!-- Tawk.to Script (تم إدراجه كما أرسلته) -->
+<script type="text/javascript">
+    var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+    (function () {
+        var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+        s1.async = true;
+        s1.src = 'https://embed.tawk.to/69ee0742ee63861c347c9c08/default';
+        s1.charset = 'UTF-8';
+        s1.setAttribute('crossorigin', '*');
+        s0.parentNode.insertBefore(s1, s0);
+    })();
+</script>
 
-    <!-- Main Editor Section -->
-    <section id="editor" class="py-20 px-4">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">محرر الصور الذكي</h2>
-                <p class="text-gray-400">ارفع صورتك ودع الذكاء الاصطناعي يقوم بالباقي</p>
-            </div>
+<script>
+    // ------------------- البيانات الأساسية -------------------
+    let students = JSON.parse(localStorage.getItem('students')) || [];
+    let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+    let purchasedCourses = JSON.parse(localStorage.getItem('purchasedCourses')) || {};
 
-            <div class="grid lg:grid-cols-3 gap-8">
-                <!-- Upload & Preview Area -->
-                <div class="lg:col-span-2 space-y-6">
-                    <!-- Upload Zone -->
-                    <div id="uploadZone" class="drop-zone rounded-3xl p-12 text-center relative overflow-hidden group cursor-pointer" onclick="document.getElementById('fileInput').click()">
-                        <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="handleFileSelect(event)">
-                        
-                        <div id="uploadContent" class="relative z-10">
-                            <div class="w-24 h-24 mx-auto mb-6 rounded-3xl glass-light flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <i class="fas fa-cloud-arrow-up text-4xl gradient-text"></i>
-                            </div>
-                            <h3 class="text-2xl font-bold mb-2">اسحب صورتك هنا أو انقر للرفع</h3>
-                            <p class="text-gray-400 mb-4">يدعم JPG, PNG, WEBP - الحد الأقصى 10MB</p>
-                            <div class="flex justify-center gap-2 text-sm text-gray-500">
-                                <span class="px-3 py-1 rounded-full glass-light">ذكاء اصطناعي محلي</span>
-                                <span class="px-3 py-1 rounded-full glass-light">لا يحتاج إنترنت سريع</span>
-                            </div>
-                        </div>
-
-                        <!-- Image Preview Container -->
-                        <div id="previewContainer" class="hidden relative z-10">
-                            <div class="relative inline-block">
-                                <canvas id="mainCanvas" class="rounded-2xl shadow-2xl max-h-[600px]"></canvas>
-                                <div id="processingOverlay" class="absolute inset-0 bg-black/60 rounded-2xl flex flex-col items-center justify-center hidden">
-                                    <span class="loader mb-4"></span>
-                                    <p class="text-white font-medium" id="processingText">جاري معالجة الصورة...</p>
-                                </div>
-                            </div>
-                            <div class="mt-4 flex justify-center gap-3">
-                                <button onclick="resetImage()" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm">
-                                    <i class="fas fa-rotate-left ml-2"></i>إعادة تعيين
-                                </button>
-                                <button onclick="document.getElementById('fileInput').click()" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm">
-                                    <i class="fas fa-image ml-2"></i>صورة جديدة
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Comparison View -->
-                    <div id="comparisonView" class="hidden glass rounded-3xl p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-lg">قبل وبعد</h3>
-                            <button onclick="toggleComparison()" class="text-sm text-primary hover:text-secondary transition-colors">
-                                <i class="fas fa-eye ml-1"></i>إخفاء/إظهار
-                            </button>
-                        </div>
-                        <div class="comparison-slider rounded-2xl overflow-hidden" id="comparisonSlider" onmousemove="handleComparisonMove(event)" ontouchmove="handleComparisonTouch(event)">
-                            <canvas id="afterCanvas" class="w-full"></canvas>
-                            <div class="before" id="beforeContainer">
-                                <canvas id="beforeCanvas" class="w-full"></canvas>
-                            </div>
-                            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center border-2 border-white/50 pointer-events-none">
-                                <i class="fas fa-arrows-left-right text-white text-sm"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Controls Panel -->
-                <div class="space-y-6">
-                    <!-- Background Controls -->
-                    <div class="glass rounded-3xl p-6">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                                <i class="fas fa-image text-primary"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold">الخلفية</h3>
-                                <p class="text-xs text-gray-400">اختر خلفية جديدة</p>
-                            </div>
-                        </div>
-
-                        <!-- Background Type -->
-                        <div class="grid grid-cols-2 gap-2 mb-4">
-                            <button onclick="setBgType('transparent')" id="btnTransparent" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm active">
-                                <i class="fas fa-checkered ml-2"></i>شفاف
-                            </button>
-                            <button onclick="setBgType('solid')" id="btnSolid" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm">
-                                <i class="fas fa-fill-drip ml-2"></i>لون صلب
-                            </button>
-                            <button onclick="setBgType('gradient')" id="btnGradient" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm">
-                                <i class="fas fa-rainbow ml-2"></i>تدرج
-                            </button>
-                            <button onclick="setBgType('image')" id="btnImage" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm">
-                                <i class="fas fa-images ml-2"></i>صورة
-                            </button>
-                        </div>
-
-                        <!-- Solid Color Picker -->
-                        <div id="solidColorControl" class="hidden mb-4">
-                            <label class="text-sm text-gray-400 mb-2 block">اختر اللون</label>
-                            <div class="flex gap-2 flex-wrap">
-                                <button onclick="setSolidColor('#ffffff')" class="w-10 h-10 rounded-xl bg-white border-2 border-gray-600 hover:scale-110 transition-transform"></button>
-                                <button onclick="setSolidColor('#000000')" class="w-10 h-10 rounded-xl bg-black border-2 border-gray-600 hover:scale-110 transition-transform"></button>
-                                <button onclick="setSolidColor('#ef4444')" class="w-10 h-10 rounded-xl bg-red-500 border-2 border-gray-600 hover:scale-110 transition-transform"></button>
-                                <button onclick="setSolidColor('#3b82f6')" class="w-10 h-10 rounded-xl bg-blue-500 border-2 border-gray-600 hover:scale-110 transition-transform"></button>
-                                <button onclick="setSolidColor('#10b981')" class="w-10 h-10 rounded-xl bg-green-500 border-2 border-gray-600 hover:scale-110 transition-transform"></button>
-                                <button onclick="setSolidColor('#f59e0b')" class="w-10 h-10 rounded-xl bg-amber-500 border-2 border-gray-600 hover:scale-110 transition-transform"></button>
-                                <button onclick="setSolidColor('#8b5cf6')" class="w-10 h-10 rounded-xl bg-violet-500 border-2 border-gray-600 hover:scale-110 transition-transform"></button>
-                                <button onclick="setSolidColor('#ec4899')" class="w-10 h-10 rounded-xl bg-pink-500 border-2 border-gray-600 hover:scale-110 transition-transform"></button>
-                                <input type="color" id="customColor" onchange="setSolidColor(this.value)" class="w-10 h-10 rounded-xl cursor-pointer border-2 border-gray-600">
-                            </div>
-                        </div>
-
-                        <!-- Gradient Presets -->
-                        <div id="gradientControl" class="hidden mb-4">
-                            <label class="text-sm text-gray-400 mb-2 block">تدرجات جاهزة</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <div onclick="setGradient('linear-gradient(135deg, #667eea 0%, #764ba2 100%)')" class="preset-bg h-16 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600"></div>
-                                <div onclick="setGradient('linear-gradient(135deg, #f093fb 0%, #f5576c 100%)')" class="preset-bg h-16 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500"></div>
-                                <div onclick="setGradient('linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)')" class="preset-bg h-16 rounded-xl bg-gradient-to-br from-blue-400 to-cyan-400"></div>
-                                <div onclick="setGradient('linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)')" class="preset-bg h-16 rounded-xl bg-gradient-to-br from-green-400 to-teal-300"></div>
-                                <div onclick="setGradient('linear-gradient(135deg, #fa709a 0%, #fee140 100%)')" class="preset-bg h-16 rounded-xl bg-gradient-to-br from-pink-400 to-yellow-300"></div>
-                                <div onclick="setGradient('linear-gradient(135deg, #30cfd0 0%, #330867 100%)')" class="preset-bg h-16 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-900"></div>
-                            </div>
-                        </div>
-
-                        <!-- Image Backgrounds -->
-                        <div id="imageBgControl" class="hidden mb-4">
-                            <label class="text-sm text-gray-400 mb-2 block">خلفيات طبيعية</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <div onclick="setImageBg('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80')" class="preset-bg h-16 rounded-xl bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&q=60')"></div>
-                                <div onclick="setImageBg('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80')" class="preset-bg h-16 rounded-xl bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=200&q=60')"></div>
-                                <div onclick="setImageBg('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80')" class="preset-bg h-16 rounded-xl bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=200&q=60')"></div>
-                                <div onclick="setImageBg('https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&q=80')" class="preset-bg h-16 rounded-xl bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=200&q=60')"></div>
-                                <div onclick="setImageBg('https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&q=80')" class="preset-bg h-16 rounded-xl bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=200&q=60')"></div>
-                                <div onclick="setImageBg('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&q=80')" class="preset-bg h-16 rounded-xl bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=200&q=60')"></div>
-                            </div>
-                        </div>
-
-                        <button onclick="removeBackground()" id="removeBgBtn" class="w-full gradient-bg py-3 rounded-xl font-bold hover:opacity-90 transition-opacity btn-glow mt-4 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                            <i class="fas fa-wand-magic-sparkles ml-2"></i>إزالة الخلفية بالذكاء الاصطناعي
-                        </button>
-                    </div>
-
-                    <!-- Lighting Controls -->
-                    <div class="glass rounded-3xl p-6">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                                <i class="fas fa-sun text-amber-500"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold">الإضاءة والألوان</h3>
-                                <p class="text-xs text-gray-400">عدّل إضاءة الصورة</p>
-                            </div>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div>
-                                <div class="flex justify-between mb-2">
-                                    <label class="text-sm text-gray-300">السطوع</label>
-                                    <span id="brightnessVal" class="text-sm text-primary">100%</span>
-                                </div>
-                                <input type="range" min="0" max="200" value="100" oninput="updateLighting('brightness', this.value)" class="w-full h-2 rounded-lg appearance-none bg-gray-700 slider-thumb">
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between mb-2">
-                                    <label class="text-sm text-gray-300">التباين</label>
-                                    <span id="contrastVal" class="text-sm text-primary">100%</span>
-                                </div>
-                                <input type="range" min="0" max="200" value="100" oninput="updateLighting('contrast', this.value)" class="w-full h-2 rounded-lg appearance-none bg-gray-700 slider-thumb">
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between mb-2">
-                                    <label class="text-sm text-gray-300">الإشباع</label>
-                                    <span id="saturationVal" class="text-sm text-primary">100%</span>
-                                </div>
-                                <input type="range" min="0" max="200" value="100" oninput="updateLighting('saturation', this.value)" class="w-full h-2 rounded-lg appearance-none bg-gray-700 slider-thumb">
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between mb-2">
-                                    <label class="text-sm text-gray-300">درجة الحرارة</label>
-                                    <span id="warmthVal" class="text-sm text-primary">0</span>
-                                </div>
-                                <input type="range" min="-50" max="50" value="0" oninput="updateLighting('warmth', this.value)" class="w-full h-2 rounded-lg appearance-none bg-gray-700 slider-thumb">
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between mb-2">
-                                    <label class="text-sm text-gray-300">الظلال</label>
-                                    <span id="shadowsVal" class="text-sm text-primary">0</span>
-                                </div>
-                                <input type="range" min="-50" max="50" value="0" oninput="updateLighting('shadows', this.value)" class="w-full h-2 rounded-lg appearance-none bg-gray-700 slider-thumb">
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between mb-2">
-                                    <label class="text-sm text-gray-300">الإضاءة الاصطناعية</label>
-                                    <span id="lightVal" class="text-sm text-primary">0</span>
-                                </div>
-                                <input type="range" min="0" max="100" value="0" oninput="updateLighting('light', this.value)" class="w-full h-2 rounded-lg appearance-none bg-gray-700 slider-thumb">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="glass rounded-3xl p-6">
-                        <button onclick="downloadImage()" id="downloadBtn" class="w-full gradient-bg py-4 rounded-xl font-bold text-lg hover:opacity-90 transition-opacity btn-glow mb-3 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                            <i class="fas fa-download ml-2"></i>تحميل الصورة
-                        </button>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="resetAdjustments()" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm">
-                                إعادة ضبط
-                            </button>
-                            <select id="formatSelect" class="px-4 py-2 rounded-xl glass-light bg-transparent text-sm border-none outline-none">
-                                <option value="png">PNG</option>
-                                <option value="jpeg">JPEG</option>
-                                <option value="webp">WEBP</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="py-20 px-4">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">لماذا محررنا الذكي؟</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto">تقنيات متطورة تعمل محلياً في متصفحك</p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="glass rounded-3xl p-8 hover:bg-white/5 transition-all group">
-                    <div class="w-14 h-14 rounded-2xl gradient-bg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-brain text-2xl text-white"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">ذكاء اصطناعي محلي</h3>
-                    <p class="text-gray-400 leading-relaxed">يعمل بنموذج الذكاء الاصطناعي مباشرة في متصفحك بدون إرسال صورك إلى أي خادم. خصوصية تامة وأمان كامل.</p>
-                </div>
-
-                <div class="glass rounded-3xl p-8 hover:bg-white/5 transition-all group">
-                    <div class="w-14 h-14 rounded-2xl bg-amber-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-bolt text-2xl text-white"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">معالجة فورية</h3>
-                    <p class="text-gray-400 leading-relaxed">أزل الخلفية وغيّر الإضاءة في أقل من 5 ثوانٍ بفضل تقنيات WebGL المتقدمة والمعالجة المتوازية.</p>
-                </div>
-
-                <div class="glass rounded-3xl p-8 hover:bg-white/5 transition-all group">
-                    <div class="w-14 h-14 rounded-2xl bg-pink-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-wand-magic text-2xl text-white"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">تأثيرات احترافية</h3>
-                    <p class="text-gray-400 leading-relaxed">مكتبة ضخمة من الخلفيات والتدرجات والتأثيرات الضوئية الجاهزة لتجعل صورك تبدو كأنها من استوديو احترافي.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- How it Works -->
-    <section id="how-it-works" class="py-20 px-4">
-        <div class="max-w-5xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">كيف يعمل؟</h2>
-                <p class="text-gray-400">ثلاث خطوات بسيطة للحصول على نتيجة احترافية</p>
-            </div>
-
-            <div class="space-y-12">
-                <div class="flex flex-col md:flex-row items-center gap-8">
-                    <div class="flex-1 text-right">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-bold mb-4">الخطوة 1</div>
-                        <h3 class="text-2xl font-bold mb-3">ارفع صورتك</h3>
-                        <p class="text-gray-400 leading-relaxed">اسحب الصورة أو انقر للرفع. يدعم المحرر جميع الصيغ الشائعة مع ضغط تلقائي للحفاظ على الجودة.</p>
-                    </div>
-                    <div class="w-24 h-24 rounded-3xl gradient-bg flex items-center justify-center shadow-2xl shadow-primary/30 flex-shrink-0">
-                        <i class="fas fa-upload text-4xl text-white"></i>
-                    </div>
-                </div>
-
-                <div class="flex flex-col md:flex-row-reverse items-center gap-8">
-                    <div class="flex-1 text-right">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/20 text-secondary text-sm font-bold mb-4">الخطوة 2</div>
-                        <h3 class="text-2xl font-bold mb-3">أزل الخلفية تلقائياً</h3>
-                        <p class="text-gray-400 leading-relaxed">اضغط على زر إزالة الخلفية ودع نموذج الذكاء الاصطناعي يحدد الشخص أو الموضوع بدقة عالية، حتى مع الشعر والتفاصيل الدقيقة.</p>
-                    </div>
-                    <div class="w-24 h-24 rounded-3xl bg-secondary flex items-center justify-center shadow-2xl shadow-secondary/30 flex-shrink-0">
-                        <i class="fas fa-wand-magic-sparkles text-4xl text-white"></i>
-                    </div>
-                </div>
-
-                <div class="flex flex-col md:flex-row items-center gap-8">
-                    <div class="flex-1 text-right">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/20 text-accent text-sm font-bold mb-4">الخطوة 3</div>
-                        <h3 class="text-2xl font-bold mb-3">خصّص وحمّل</h3>
-                        <p class="text-gray-400 leading-relaxed">اختر خلفية جديدة، عدّل الإضاءة والألوان، ثم حمّل صورتك عالية الجودة بصيغة PNG مع الشفافية.</p>
-                    </div>
-                    <div class="w-24 h-24 rounded-3xl bg-accent flex items-center justify-center shadow-2xl shadow-accent/30 flex-shrink-0">
-                        <i class="fas fa-download text-4xl text-white"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="border-t border-white/10 py-12 px-4 mt-20">
-        <div class="max-w-7xl mx-auto text-center">
-            <div class="flex items-center justify-center gap-3 mb-6">
-                <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
-                    <i class="fas fa-wand-magic-sparkles text-white"></i>
-                </div>
-                <span class="text-2xl font-bold gradient-text">AI Photo Studio</span>
-            </div>
-            <p class="text-gray-500 mb-6">محرر صور ذكي يعمل بالكامل في المتصفح - خصوصية تامة</p>
-            <div class="flex justify-center gap-6 text-gray-400">
-                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-github text-xl"></i></a>
-                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-twitter text-xl"></i></a>
-                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-discord text-xl"></i></a>
-            </div>
-            <p class="text-gray-600 text-sm mt-8">© 2026 AI Photo Studio. جميع الحقوق محفوظة.</p>
-        </div>
-    </footer>
-
-    <script>
-        // Global Variables
-        let originalImage = null;
-        let processedImage = null;
-        let maskData = null;
-        let currentBg = { type: 'transparent', value: null };
-        let lighting = {
-            brightness: 100,
-            contrast: 100,
-            saturation: 100,
-            warmth: 0,
-            shadows: 0,
-            light: 0
-        };
-        let isProcessing = false;
-
-        // Initialize Particles
-        function initParticles() {
-            const container = document.getElementById('particles');
-            for (let i = 0; i < 50; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 5 + 's';
-                particle.style.opacity = Math.random() * 0.5;
-                const size = Math.random() * 4 + 2;
-                particle.style.width = size + 'px';
-                particle.style.height = size + 'px';
-                container.appendChild(particle);
-                
-                // Animate
-                animateParticle(particle);
-            }
+    // تعريف الكورسات لكل صف
+    const grades = {
+        "3اعدادي": {
+            name: "الصف الثالث الإعدادي",
+            courses: [
+                { id: "c1", name: "اللغة العربية", price: 150, image: "📖", branches: 5, videosPerBranch: 20 },
+                { id: "c2", name: "الرياضيات", price: 150, image: "🧮", branches: 5, videosPerBranch: 20 },
+                { id: "c3", name: "العلوم", price: 150, image: "🔬", branches: 5, videosPerBranch: 20 },
+                { id: "c4", name: "الدراسات الاجتماعية", price: 150, image: "🌍", branches: 5, videosPerBranch: 20 },
+                { id: "c5", name: "اللغة الإنجليزية", price: 150, image: "🇬🇧", branches: 5, videosPerBranch: 20 }
+            ]
+        },
+        "1ثانوي": {
+            name: "الصف الأول الثانوي",
+            courses: [
+                { id: "c6", name: "اللغة العربية", price: 180, image: "📖", branches: 5, videosPerBranch: 20 },
+                { id: "c7", name: "الرياضيات", price: 180, image: "🧮", branches: 5, videosPerBranch: 20 },
+                { id: "c8", name: "الفيزياء", price: 180, image: "⚡", branches: 5, videosPerBranch: 20 },
+                { id: "c9", name: "الكيمياء", price: 180, image: "🧪", branches: 5, videosPerBranch: 20 },
+                { id: "c10", name: "الأحياء", price: 180, image: "🧬", branches: 5, videosPerBranch: 20 }
+            ]
+        },
+        "2ثانوي": {
+            name: "الصف الثاني الثانوي",
+            courses: [
+                { id: "c11", name: "اللغة العربية", price: 200, image: "📖", branches: 5, videosPerBranch: 20 },
+                { id: "c12", name: "الرياضيات", price: 200, image: "🧮", branches: 5, videosPerBranch: 20 },
+                { id: "c13", name: "الفيزياء", price: 200, image: "⚡", branches: 5, videosPerBranch: 20 },
+                { id: "c14", name: "الكيمياء", price: 200, image: "🧪", branches: 5, videosPerBranch: 20 },
+                { id: "c15", name: "التاريخ", price: 200, image: "📜", branches: 5, videosPerBranch: 20 }
+            ]
         }
+    };
 
-        function animateParticle(particle) {
-            const duration = Math.random() * 10000 + 10000;
-            const x = Math.random() * 100 - 50;
-            const y = Math.random() * 100 - 50;
-            
-            particle.animate([
-                { transform: 'translate(0, 0)' },
-                { transform: `translate(${x}px, ${y}px)` }
-            ], {
-                duration: duration,
-                iterations: Infinity,
-                direction: 'alternate',
-                easing: 'ease-in-out'
-            });
+    // توليد كود فريد
+    function generateUniqueCode() {
+        let code;
+        do {
+            code = 'STU' + Math.floor(100000 + Math.random() * 900000);
+        } while (students.some(s => s.code === code));
+        return code;
+    }
+
+    // تسجيل الطالب
+    function registerStudent(name, password, grade, phone, email) {
+        if (students.some(s => s.email === email)) {
+            alert("البريد الإلكتروني موجود مسبقاً!");
+            return false;
         }
-
-        // Drag and Drop
-        const uploadZone = document.getElementById('uploadZone');
-        
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            uploadZone.addEventListener(eventName, preventDefaults, false);
+        const code = generateUniqueCode();
+        students.push({
+            id: Date.now(),
+            name,
+            password,
+            grade,
+            phone,
+            email,
+            code,
+            isBlocked: false,
+            role: "student",
+            createdAt: new Date().toISOString()
         });
+        localStorage.setItem('students', JSON.stringify(students));
+        alert(`تم إنشاء حساب بنجاح! كودك الفريد هو: ${code} . احتفظ به للرجوع إليه.`);
+        return true;
+    }
 
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
+    // تسجيل الدخول
+    function loginStudent(emailOrCode, password) {
+        const user = students.find(s => (s.email === emailOrCode || s.code === emailOrCode) && s.password === password && !s.isBlocked);
+        if (user) {
+            currentUser = user;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            alert(`مرحباً ${user.name}`);
+            renderApp();
+            return true;
+        } else {
+            alert("بيانات غير صحيحة أو الحساب محظور!");
+            return false;
         }
+    }
 
-        ['dragenter', 'dragover'].forEach(eventName => {
-            uploadZone.addEventListener(eventName, () => uploadZone.classList.add('dragover'), false);
+    // تسجيل الخروج
+    function logout() {
+        currentUser = null;
+        localStorage.removeItem('currentUser');
+        renderApp();
+    }
+
+    // شراء كورس
+    function purchaseCourse(courseId, price) {
+        if (!currentUser) return;
+        if (!purchasedCourses[currentUser.id]) purchasedCourses[currentUser.id] = [];
+        if (purchasedCourses[currentUser.id].includes(courseId)) {
+            alert("你已经购买了该课程!");
+            return;
+        }
+        if (confirm(`شراء الكورس بسعر ${price} جنيه؟ (محاكاة دفع)`)) {
+            purchasedCourses[currentUser.id].push(courseId);
+            localStorage.setItem('purchasedCourses', JSON.stringify(purchasedCourses));
+            alert("تم شراء الكورس بنجاح! يمكنك الآن مشاهدة المحتوى.");
+            renderApp();
+        }
+    }
+
+    // إضافة طالب بواسطة الأدمن
+    function adminAddStudent(name, password, grade, phone, email) {
+        if (students.some(s => s.email === email)) {
+            alert("البريد موجود مسبقاً");
+            return false;
+        }
+        const code = generateUniqueCode();
+        students.push({
+            id: Date.now(),
+            name,
+            password,
+            grade,
+            phone,
+            email,
+            code,
+            isBlocked: false,
+            role: "student"
         });
+        localStorage.setItem('students', JSON.stringify(students));
+        alert(`تم إضافة الطالب ${name} بنجاح، كود الطالب: ${code}`);
+        renderApp();
+        return true;
+    }
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            uploadZone.addEventListener(eventName, () => uploadZone.classList.remove('dragover'), false);
-        });
-
-        uploadZone.addEventListener('drop', handleDrop, false);
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            if (files.length) handleFile(files[0]);
-        }
-
-        function handleFileSelect(e) {
-            if (e.target.files.length) handleFile(e.target.files[0]);
-        }
-
-        function handleFile(file) {
-            if (!file.type.startsWith('image/')) {
-                alert('يرجى رفع ملف صورة فقط');
-                return;
-            }
-            if (file.size > 10 * 1024 * 1024) {
-                alert('حجم الملف كبير جداً. الحد الأقصى 10MB');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    originalImage = img;
-                    processedImage = img;
-                    maskData = null;
-                    displayImage(img);
-                    document.getElementById('removeBgBtn').disabled = false;
-                    document.getElementById('uploadContent').classList.add('hidden');
-                    document.getElementById('previewContainer').classList.remove('hidden');
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function displayImage(img) {
-            const canvas = document.getElementById('mainCanvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Resize if too large
-            const maxDim = 1200;
-            let { width, height } = img;
-            if (width > maxDim || height > maxDim) {
-                const ratio = Math.min(maxDim / width, maxDim / height);
-                width *= ratio;
-                height *= ratio;
-            }
-            
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(img, 0, 0, width, height);
-            
-            // Update comparison canvases
-            updateComparisonCanvases();
-        }
-
-        async function removeBackground() {
-            if (!originalImage || isProcessing) return;
-            
-            isProcessing = true;
-            const overlay = document.getElementById('processingOverlay');
-            const text = document.getElementById('processingText');
-            overlay.classList.remove('hidden');
-            
-            try {
-                text.textContent = 'جاري تحميل نموذج الذكاء الاصطناعي...';
-                
-                // Use imgly background removal
-                const canvas = document.getElementById('mainCanvas');
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                
-                text.textContent = 'جاري إزالة الخلفية بالذكاء الاصطناعي...';
-                
-                const config = {
-                    progress: (p) => {
-                        text.textContent = `جاري المعالجة... ${Math.round(p * 100)}%`;
-                    }
-                };
-                
-                const resultBlob = await backgroundRemoval.removeBackground(blob, config);
-                const resultUrl = URL.createObjectURL(resultBlob);
-                
-                const resultImg = new Image();
-                resultImg.onload = () => {
-                    processedImage = resultImg;
-                    maskData = null; // We have the processed image directly
-                    
-                    // Draw result
-                    const ctx = canvas.getContext('2d');
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(resultImg, 0, 0, canvas.width, canvas.height);
-                    
-                    // Enable download
-                    document.getElementById('downloadBtn').disabled = false;
-                    
-                    // Show comparison
-                    document.getElementById('comparisonView').classList.remove('hidden');
-                    updateComparisonCanvases();
-                    
-                    // Apply current background if not transparent
-                    if (currentBg.type !== 'transparent') {
-                        applyBackground();
-                    }
-                    
-                    isProcessing = false;
-                    overlay.classList.add('hidden');
-                };
-                resultImg.src = resultUrl;
-                
-            } catch (error) {
-                console.error(error);
-                text.textContent = 'حدث خطأ. جرب صورة أخرى.';
-                setTimeout(() => {
-                    isProcessing = false;
-                    overlay.classList.add('hidden');
-                }, 2000);
-            }
-        }
-
-        function updateComparisonCanvases() {
-            if (!originalImage || !processedImage) return;
-            
-            const beforeCanvas = document.getElementById('beforeCanvas');
-            const afterCanvas = document.getElementById('afterCanvas');
-            const mainCanvas = document.getElementById('mainCanvas');
-            
-            beforeCanvas.width = mainCanvas.width;
-            beforeCanvas.height = mainCanvas.height;
-            afterCanvas.width = mainCanvas.width;
-            afterCanvas.height = mainCanvas.height;
-            
-            const beforeCtx = beforeCanvas.getContext('2d');
-            const afterCtx = afterCanvas.getContext('2d');
-            
-            beforeCtx.drawImage(originalImage, 0, 0, beforeCanvas.width, beforeCanvas.height);
-            afterCtx.drawImage(mainCanvas, 0, 0);
-        }
-
-        function handleComparisonMove(e) {
-            const slider = document.getElementById('comparisonSlider');
-            const rect = slider.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 100;
-            document.getElementById('beforeContainer').style.width = Math.max(0, Math.min(100, x)) + '%';
-        }
-
-        function handleComparisonTouch(e) {
-            const slider = document.getElementById('comparisonSlider');
-            const rect = slider.getBoundingClientRect();
-            const x = ((e.touches[0].clientX - rect.left) / rect.width) * 100;
-            document.getElementById('beforeContainer').style.width = Math.max(0, Math.min(100, x)) + '%';
-        }
-
-        function toggleComparison() {
-            const view = document.getElementById('comparisonView');
-            view.classList.toggle('hidden');
-        }
-
-        // Background Controls
-        function setBgType(type) {
-            currentBg.type = type;
-            
-            // Update buttons
-            ['transparent', 'solid', 'gradient', 'image'].forEach(t => {
-                document.getElementById(`btn${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.remove('active', 'ring-2', 'ring-primary');
-            });
-            document.getElementById(`btn${type.charAt(0).toUpperCase() + type.slice(1)}`).classList.add('active');
-            
-            // Show/hide controls
-            document.getElementById('solidColorControl').classList.toggle('hidden', type !== 'solid');
-            document.getElementById('gradientControl').classList.toggle('hidden', type !== 'gradient');
-            document.getElementById('imageBgControl').classList.toggle('hidden', type !== 'image');
-            
-            if (processedImage && !isProcessing) {
-                applyBackground();
-            }
-        }
-
-        function setSolidColor(color) {
-            currentBg.value = color;
-            if (processedImage) applyBackground();
-        }
-
-        function setGradient(gradient) {
-            currentBg.value = gradient;
-            if (processedImage) applyBackground();
-        }
-
-        function setImageBg(url) {
-            currentBg.value = url;
-            if (processedImage) applyBackground();
-        }
-
-        function applyBackground() {
-            if (!processedImage) return;
-            
-            const canvas = document.getElementById('mainCanvas');
-            const ctx = canvas.getContext('2d');
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw background
-            if (currentBg.type === 'solid' && currentBg.value) {
-                ctx.fillStyle = currentBg.value;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-            } else if (currentBg.type === 'gradient' && currentBg.value) {
-                // Parse gradient
-                const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-                // Simple gradient approximation - in real app would parse CSS gradient
-                gradient.addColorStop(0, '#667eea');
-                gradient.addColorStop(1, '#764ba2');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-            } else if (currentBg.type === 'image' && currentBg.value) {
-                const bgImg = new Image();
-                bgImg.crossOrigin = 'anonymous';
-                bgImg.onload = () => {
-                    ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-                    drawSubject(ctx, canvas);
-                    applyLighting(ctx, canvas);
-                };
-                bgImg.src = currentBg.value;
-                return;
-            }
-            
-            drawSubject(ctx, canvas);
-            applyLighting(ctx, canvas);
-            updateComparisonCanvases();
-        }
-
-        function drawSubject(ctx, canvas) {
-            if (maskData) {
-                // Use mask to draw only subject
-                ctx.save();
-                // This is simplified - real implementation would use the actual mask
-                ctx.drawImage(processedImage, 0, 0, canvas.width, canvas.height);
-                ctx.restore();
+    // حظر طالب
+    function toggleBlockStudent(studentId) {
+        const student = students.find(s => s.id == studentId);
+        if (student) {
+            student.isBlocked = !student.isBlocked;
+            localStorage.setItem('students', JSON.stringify(students));
+            if (currentUser && currentUser.id == studentId && student.isBlocked) {
+                logout();
+                alert("تم حظر حسابك، تواصل مع الإدارة.");
             } else {
-                // Processed image already has transparency
-                ctx.drawImage(processedImage, 0, 0, canvas.width, canvas.height);
+                renderApp();
             }
         }
+    }
 
-        function applyLighting(ctx, canvas) {
-            // Create temp canvas for lighting adjustments
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
-            const tempCtx = tempCanvas.getContext('2d');
-            
-            tempCtx.drawImage(canvas, 0, 0);
-            
-            // Apply filters
-            const filters = [];
-            if (lighting.brightness !== 100) filters.push(`brightness(${lighting.brightness}%)`);
-            if (lighting.contrast !== 100) filters.push(`contrast(${lighting.contrast}%)`);
-            if (lighting.saturation !== 100) filters.push(`saturate(${lighting.saturation}%)`);
-            
-            if (filters.length > 0) {
-                tempCtx.filter = filters.join(' ');
-                tempCtx.drawImage(tempCanvas, 0, 0);
-                tempCtx.filter = 'none';
-            }
-            
-            // Warmth adjustment
-            if (lighting.warmth !== 0) {
-                const warmth = lighting.warmth;
-                const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageData.data;
-                
-                for (let i = 0; i < data.length; i += 4) {
-                    if (data[i + 3] > 0) { // If not transparent
-                        data[i] = Math.min(255, data[i] + warmth);     // Red
-                        data[i + 2] = Math.max(0, data[i + 2] - warmth); // Blue
-                    }
-                }
-                tempCtx.putImageData(imageData, 0, 0);
-            }
-            
-            // Shadows adjustment
-            if (lighting.shadows !== 0) {
-                const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageData.data;
-                const shadowBoost = lighting.shadows;
-                
-                for (let i = 0; i < data.length; i += 4) {
-                    if (data[i + 3] > 0) {
-                        const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                        if (brightness < 128) {
-                            const factor = 1 + (shadowBoost / 100);
-                            data[i] = Math.min(255, data[i] * factor);
-                            data[i + 1] = Math.min(255, data[i + 1] * factor);
-                            data[i + 2] = Math.min(255, data[i + 2] * factor);
-                        }
-                    }
-                }
-                tempCtx.putImageData(imageData, 0, 0);
-            }
-            
-            // Artificial light effect
-            if (lighting.light > 0) {
-                const gradient = tempCtx.createRadialGradient(
-                    canvas.width / 2, canvas.height / 3, 0,
-                    canvas.width / 2, canvas.height / 3, canvas.width * 0.8
-                );
-                gradient.addColorStop(0, `rgba(255, 250, 240, ${lighting.light / 200})`);
-                gradient.addColorStop(1, 'rgba(255, 250, 240, 0)');
-                
-                tempCtx.globalCompositeOperation = 'screen';
-                tempCtx.fillStyle = gradient;
-                tempCtx.fillRect(0, 0, canvas.width, canvas.height);
-                tempCtx.globalCompositeOperation = 'source-over';
-            }
-            
-            // Clear and redraw
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(tempCanvas, 0, 0);
+    // فتح كورس لطالب معين
+    function adminUnlockCourse(studentId, courseId) {
+        if (!purchasedCourses[studentId]) purchasedCourses[studentId] = [];
+        if (!purchasedCourses[studentId].includes(courseId)) {
+            purchasedCourses[studentId].push(courseId);
+            localStorage.setItem('purchasedCourses', JSON.stringify(purchasedCourses));
+            alert("تم فتح الكورس للطالب بنجاح!");
+            renderApp();
+        } else {
+            alert("الكورس مفتوح بالفعل!");
         }
+    }
 
-        function updateLighting(type, value) {
-            lighting[type] = parseInt(value);
-            
-            // Update display value
-            const suffix = type === 'warmth' || type === 'shadows' || type === 'light' ? '' : '%';
-            document.getElementById(`${type}Val`).textContent = value + suffix;
-            
-            if (processedImage && !isProcessing) {
-                applyBackground();
-            }
+    // تعديل بيانات الطالب
+    function adminEditStudent(studentId, newName, newPhone, newGrade) {
+        const student = students.find(s => s.id == studentId);
+        if (student) {
+            student.name = newName;
+            student.phone = newPhone;
+            student.grade = newGrade;
+            localStorage.setItem('students', JSON.stringify(students));
+            alert("تم تحديث بيانات الطالب");
+            renderApp();
         }
+    }
 
-        function resetAdjustments() {
-            lighting = {
-                brightness: 100,
-                contrast: 100,
-                saturation: 100,
-                warmth: 0,
-                shadows: 0,
-                light: 0
-            };
-            
-            // Reset sliders
-            ['brightness', 'contrast', 'saturation'].forEach(type => {
-                document.querySelector(`input[oninput="updateLighting('${type}', this.value)"]`).value = 100;
-                document.getElementById(`${type}Val`).textContent = '100%';
+    // عرض الكورسات للطالب الحالي
+    function renderStudentCourses() {
+        if (!currentUser) return "";
+        const gradeData = grades[currentUser.grade];
+        if (!gradeData) return "<p>لم يتم تعيين صف لك</p>";
+        const userPurchased = purchasedCourses[currentUser.id] || [];
+        
+        let html = `<h2>📚 كورسات ${gradeData.name}</h2><div class="courses-grid">`;
+        gradeData.courses.forEach(course => {
+            const isPurchased = userPurchased.includes(course.id);
+            html += `
+                <div class="course-card">
+                    <div class="course-image">${course.image}</div>
+                    <div class="course-info">
+                        <div class="course-title">${course.name}</div>
+                        <div class="course-price">${course.price} جنيه</div>
+                        <div>📁 ${course.branches} فصول | 🎥 ${course.videosPerBranch} فيديو لكل فصل</div>
+                        ${isPurchased ? `<button class="watch-btn" onclick="watchCourse('${course.id}','${course.name}')">▶️ مشاهدة الكورس</button>` : `<button class="purchase-btn" onclick="purchaseCourse('${course.id}',${course.price})">💰 شراء الكورس</button>`}
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+        return html;
+    }
+
+    // مشاهدة الكورس (محاكاة الفيديوهات باستخدام YouTube embed)
+    window.watchCourse = function(courseId, courseName) {
+        if (!currentUser) return;
+        const userPurchased = purchasedCourses[currentUser.id] || [];
+        if (!userPurchased.includes(courseId)) {
+            alert("يجب شراء الكورس أولاً!");
+            return;
+        }
+        let videoHTML = `<h3>🎬 ${courseName} - محتوى تعليمي (فيديوهات نموذجية من YouTube)</h3>`;
+        videoHTML += `<div style="display:grid; gap:20px;">`;
+        for (let i = 1; i <= 5; i++) {
+            videoHTML += `
+                <div style="background:#f7fafc; padding:15px; border-radius:15px;">
+                    <h4>الفصل ${i}</h4>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:10px;">
+            `;
+            for (let v = 1; v <= 5; v++) {
+                videoHTML += `
+                    <div>
+                        <iframe width="100%" height="180" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=example" title="فيديو تعليمي" frameborder="0" allowfullscreen></iframe>
+                        <p style="margin-top:5px">📹 فيديو ${v} : شرح درس مهم</p>
+                    </div>
+                `;
+            }
+            videoHTML += `</div></div>`;
+        }
+        videoHTML += `</div><button onclick="renderApp()" class="btn-logout" style="margin-top:20px;">⬅️ رجوع</button>`;
+        document.getElementById("mainContent").innerHTML = videoHTML;
+    };
+
+    // لوحة تحكم الأدمن مع إمكانية إضافة طلاب
+    function renderAdminPanel() {
+        if (!currentUser || currentUser.role !== 'admin') return "";
+        return `
+            <div class="admin-panel">
+                <h2><i class="fas fa-user-shield"></i> لوحة تحكم الأدمن</h2>
+                <div class="admin-section">
+                    <h3>➕ إضافة طالب جديد (يدوي)</h3>
+                    <input type="text" id="adminName" placeholder="الاسم الكامل">
+                    <input type="password" id="adminPassword" placeholder="الرقم السري">
+                    <select id="adminGrade">
+                        <option value="3اعدادي">3 إعدادي</option>
+                        <option value="1ثانوي">1 ثانوي</option>
+                        <option value="2ثانوي">2 ثانوي</option>
+                    </select>
+                    <input type="text" id="adminPhone" placeholder="رقم الهاتف">
+                    <input type="email" id="adminEmail" placeholder="البريد الإلكتروني">
+                    <button onclick="addStudentByAdmin()">➕ إضافة طالب</button>
+                </div>
+                <div class="admin-section">
+                    <h3>📋 قائمة الطلاب</h3>
+                    <div class="students-table">
+                        <table>
+                            <thead>
+                                <tr><th>الاسم</th><th>الكود</th><th>الصف</th><th>الهاتف</th><th>البريد</th><th>حالة</th><th>إجراءات</th></tr>
+                            </thead>
+                            <tbody>
+                                ${students.map(s => `
+                                    <tr>
+                                        <td>${s.name}</td>
+                                        <td>${s.code}</td>
+                                        <td>${s.grade}</td>
+                                        <td>${s.phone}</td>
+                                        <td>${s.email}</td>
+                                        <td>${s.isBlocked ? '<span class="badge">🚫 محظور</span>' : '<span class="badge">✅ نشط</span>'}</td>
+                                        <td>
+                                            <button class="admin-btn btn-danger" onclick="toggleBlockStudent(${s.id})">${s.isBlocked ? 'فك الحظر' : 'حظر'}</button>
+                                            <button class="admin-btn btn-warning" onclick="showUnlockCourse(${s.id})">🔓 فتح كورس</button>
+                                            <button class="admin-btn" onclick="showEditStudent(${s.id})">✏️ تعديل</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // دوال مساعدة للأدمن
+    window.addStudentByAdmin = function() {
+        const name = document.getElementById('adminName')?.value;
+        const password = document.getElementById('adminPassword')?.value;
+        const grade = document.getElementById('adminGrade')?.value;
+        const phone = document.getElementById('adminPhone')?.value;
+        const email = document.getElementById('adminEmail')?.value;
+        if (!name || !password || !grade || !phone || !email) {
+            alert("يرجى ملء جميع الحقول");
+            return;
+        }
+        adminAddStudent(name, password, grade, phone, email);
+    };
+
+    window.showUnlockCourse = function(studentId) {
+        const grade = students.find(s => s.id == studentId)?.grade;
+        const courses = grades[grade]?.courses || [];
+        let courseOptions = courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        const courseId = prompt(`اختر ID الكورس لفتحه للطالب:\n${courses.map(c => `${c.id}: ${c.name}`).join('\n')}`);
+        if (courseId) adminUnlockCourse(studentId, courseId);
+    };
+
+    window.showEditStudent = function(studentId) {
+        const student = students.find(s => s.id == studentId);
+        const newName = prompt("الاسم الجديد:", student.name);
+        const newPhone = prompt("رقم الهاتف الجديد:", student.phone);
+        const newGrade = prompt("الصف الجديد (3اعدادي / 1ثانوي / 2ثانوي):", student.grade);
+        if (newName && newPhone && newGrade) adminEditStudent(studentId, newName, newPhone, newGrade);
+    };
+
+    // صفحات تسجيل الدخول
+    function renderAuth() {
+        return `
+            <div class="form-container">
+                <h2>🔐 تسجيل الدخول</h2>
+                <input type="text" id="loginEmail" placeholder="البريد الإلكتروني أو الكود">
+                <input type="password" id="loginPassword" placeholder="الرقم السري">
+                <button onclick="handleLogin()">دخول</button>
+                <div class="toggle-form"><span onclick="showRegister()">✨ إنشاء حساب جديد</span></div>
+                <hr style="margin:20px 0">
+                <h4>👑 حساب الأدمن التجريبي</h4>
+                <p>البريد: admin@platform.com | كلمة السر: admin123</p>
+                <button onclick="adminLogin()">تسجيل دخول كأدمن</button>
+            </div>
+        `;
+    }
+
+    function renderRegister() {
+        return `
+            <div class="form-container">
+                <h2>📝 إنشاء حساب جديد</h2>
+                <input type="text" id="regName" placeholder="الاسم الكامل">
+                <input type="password" id="regPassword" placeholder="الرقم السري">
+                <select id="regGrade">
+                    <option value="3اعدادي">الصف الثالث الإعدادي</option>
+                    <option value="1ثانوي">الصف الأول الثانوي</option>
+                    <option value="2ثانوي">الصف الثاني الثانوي</option>
+                </select>
+                <input type="tel" id="regPhone" placeholder="رقم الهاتف">
+                <input type="email" id="regEmail" placeholder="البريد الإلكتروني">
+                <button onclick="handleRegister()">إنشاء حساب</button>
+                <div class="toggle-form"><span onclick="showLogin()">🔐 لدي حساب بالفعل</span></div>
+            </div>
+        `;
+    }
+
+    // المعالجات العامة
+    window.handleLogin = function() {
+        const email = document.getElementById('loginEmail').value;
+        const pwd = document.getElementById('loginPassword').value;
+        loginStudent(email, pwd);
+    };
+    window.handleRegister = function() {
+        const name = document.getElementById('regName').value;
+        const pwd = document.getElementById('regPassword').value;
+        const grade = document.getElementById('regGrade').value;
+        const phone = document.getElementById('regPhone').value;
+        const email = document.getElementById('regEmail').value;
+        if (!name || !pwd || !grade || !phone || !email) {
+            alert("جميع الحقول مطلوبة");
+            return;
+        }
+        registerStudent(name, pwd, grade, phone, email);
+        showLogin();
+    };
+    window.adminLogin = function() {
+        if (!students.some(s => s.role === 'admin')) {
+            students.push({
+                id: 999,
+                name: "Administrator",
+                password: "admin123",
+                email: "admin@platform.com",
+                role: "admin",
+                isBlocked: false,
+                code: "ADMIN001"
             });
-            
-            ['warmth', 'shadows', 'light'].forEach(type => {
-                document.querySelector(`input[oninput="updateLighting('${type}', this.value)"]`).value = 0;
-                document.getElementById(`${type}Val`).textContent = '0';
-            });
-            
-            if (processedImage) applyBackground();
+            localStorage.setItem('students', JSON.stringify(students));
         }
+        const adminAcc = students.find(s => s.role === 'admin');
+        currentUser = adminAcc;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        renderApp();
+    };
+    window.showRegister = function() { renderApp('register'); };
+    window.showLogin = function() { renderApp('login'); };
+    window.toggleBlockStudent = toggleBlockStudent;
 
-        function resetImage() {
-            if (!originalImage) return;
-            processedImage = originalImage;
-            maskData = null;
-            currentBg = { type: 'transparent', value: null };
-            resetAdjustments();
-            displayImage(originalImage);
-            document.getElementById('removeBgBtn').disabled = false;
-            document.getElementById('downloadBtn').disabled = true;
-            document.getElementById('comparisonView').classList.add('hidden');
-            
-            // Reset background buttons
-            setBgType('transparent');
+    function renderApp(page = null) {
+        const headerUser = currentUser ? `<div class="user-info"><span>👋 ${currentUser.name} ${currentUser.role === 'admin' ? '(أدمن)' : ''}</span><button class="btn-logout" onclick="logout()">تسجيل خروج</button></div>` : `<div></div>`;
+        document.getElementById('userHeaderInfo').innerHTML = headerUser;
+        let mainHtml = "";
+        if (!currentUser) {
+            if (page === 'register') mainHtml = renderRegister();
+            else mainHtml = renderAuth();
+        } else {
+            if (currentUser.role === 'admin') {
+                mainHtml = renderAdminPanel() + renderStudentCourses(); // الأدمن يرى الطلاب والكورسات
+            } else {
+                mainHtml = renderStudentCourses();
+            }
         }
+        document.getElementById('mainContent').innerHTML = mainHtml;
+    }
 
-        function downloadImage() {
-            const canvas = document.getElementById('mainCanvas');
-            const format = document.getElementById('formatSelect').value;
-            const mimeType = format === 'jpeg' ? 'image/jpeg' : format === 'webp' ? 'image/webp' : 'image/png';
-            
-            const link = document.createElement('a');
-            link.download = `edited-photo.${format}`;
-            link.href = canvas.toDataURL(mimeType, 0.95);
-            link.click();
-        }
+    // التحقق من وجود أدمن تلقائي
+    if (!students.some(s => s.role === 'admin')) {
+        students.push({
+            id: 999,
+            name: "Administrator",
+            password: "admin123",
+            email: "admin@platform.com",
+            role: "admin",
+            isBlocked: false,
+            code: "ADMIN001",
+            phone: "01000000000"
+        });
+        localStorage.setItem('students', JSON.stringify(students));
+    }
 
-        function scrollToEditor() {
-            document.getElementById('editor').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function loadDemo() {
-            scrollToEditor();
-            // Load a demo image
-            const demoImg = new Image();
-            demoImg.crossOrigin = 'anonymous';
-            demoImg.onload = () => {
-                originalImage = demoImg;
-                processedImage = demoImg;
-                displayImage(demoImg);
-                document.getElementById('removeBgBtn').disabled = false;
-                document.getElementById('uploadContent').classList.add('hidden');
-                document.getElementById('previewContainer').classList.remove('hidden');
-            };
-            demoImg.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&q=80';
-        }
-
-        // Initialize
-        initParticles();
-    </script>
+    renderApp();
+</script>
 </body>
 </html>
