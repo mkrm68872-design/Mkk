@@ -3,1171 +3,1081 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظرية الشركة الذاتية - كتاب تفاعلي</title>
+    <title>محرر الصور الذكي - AI Photo Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@imgly/background-removal@1.5.5/dist/background-removal.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#a855f7',
+                        accent: '#ec4899',
+                        dark: '#0f172a',
+                        darker: '#020617',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-1000px 0' },
+                            '100%': { backgroundPosition: '1000px 0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&family=Noto+Sans+Arabic:wght@300;400;600;700&display=swap');
-        
-        :root {
-            --black: #000000;
-            --white: #ffffff;
-            --gray-100: #f5f5f5;
-            --gray-200: #e5e5e5;
-            --gray-300: #d4d4d4;
-            --gray-400: #a3a3a3;
-            --gray-500: #737373;
-            --gray-600: #525252;
-            --gray-700: #404040;
-            --gray-800: #262626;
-            --gray-900: #171717;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-
         body {
-            font-family: 'Noto Sans Arabic', 'Noto Naskh Arabic', sans-serif;
-            background: var(--white);
-            color: var(--black);
+            font-family: 'Cairo', sans-serif;
+            background: #020617;
             overflow-x: hidden;
         }
-
-        /* ===== LOGIN SCREEN ===== */
-        #loginScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--white);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease;
+        
+        .glass {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        #loginScreen.hidden {
-            opacity: 0;
-            pointer-events: none;
+        
+        .glass-light {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        .login-box {
-            border: 3px solid var(--black);
-            padding: 60px 80px;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-
-        .login-box h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
         }
-
-        .login-box .subtitle {
-            font-size: 0.9rem;
-            color: var(--gray-500);
-            margin-bottom: 40px;
-            font-weight: 300;
+        
+        .mesh-gradient {
+            background: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(99, 102, 241, 0.15) 0px, transparent 50%);
         }
-
-        .login-input {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid var(--black);
-            background: var(--white);
-            color: var(--black);
-            font-size: 1.1rem;
-            font-family: inherit;
-            margin-bottom: 20px;
-            text-align: center;
-            outline: none;
+        
+        .drop-zone {
+            border: 2px dashed rgba(99, 102, 241, 0.3);
             transition: all 0.3s ease;
         }
-
-        .login-input:focus {
-            background: var(--gray-100);
+        
+        .drop-zone.dragover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.1);
             transform: scale(1.02);
         }
-
-        .login-btn {
-            width: 100%;
-            padding: 15px;
-            background: var(--black);
-            color: var(--white);
-            border: 2px solid var(--black);
-            font-size: 1.1rem;
-            font-family: inherit;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .login-btn:hover {
-            background: var(--white);
-            color: var(--black);
-        }
-
-        .login-error {
-            color: #cc0000;
-            font-size: 0.9rem;
-            margin-top: 15px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .login-error.show {
-            opacity: 1;
-        }
-
-        /* ===== BOOK CONTAINER ===== */
-        #bookContainer {
-            display: none;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        #bookContainer.active {
-            display: block;
-            animation: fadeIn 1s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ===== HEADER ===== */
-        .book-header {
-            text-align: center;
-            padding: 60px 0 40px;
-            border-bottom: 2px solid var(--black);
-            margin-bottom: 40px;
-        }
-
-        .book-header h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            line-height: 1.3;
-        }
-
-        .book-header .author {
-            font-size: 1.1rem;
-            color: var(--gray-500);
-            font-weight: 300;
-        }
-
-        .book-header .date {
-            font-size: 0.9rem;
-            color: var(--gray-400);
-            margin-top: 10px;
-        }
-
-        /* ===== CHAPTERS ===== */
-        .chapter {
-            margin-bottom: 60px;
-            padding-bottom: 40px;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .chapter-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid var(--black);
-            display: inline-block;
-        }
-
-        .chapter-number {
-            display: inline-block;
-            width: 50px;
-            height: 50px;
-            background: var(--black);
-            color: var(--white);
+        
+        .slider-thumb::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            text-align: center;
-            line-height: 50px;
-            font-weight: 700;
-            margin-left: 15px;
-            font-size: 1.2rem;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
         }
-
-        .chapter-content {
-            font-size: 1.15rem;
-            line-height: 2.2;
-            text-align: justify;
-            color: var(--gray-800);
+        
+        .slider-thumb::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
         }
-
-        .chapter-content p {
-            margin-bottom: 25px;
+        
+        .bg-pattern {
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
         }
-
-        /* ===== QUOTES ===== */
-        .quote-box {
-            border-right: 4px solid var(--black);
-            padding: 25px 30px;
-            margin: 35px 0;
-            background: var(--gray-100);
-            font-style: italic;
-            font-size: 1.2rem;
-            line-height: 2;
-        }
-
-        .quote-box .author-quote {
-            display: block;
-            margin-top: 15px;
-            font-size: 0.95rem;
-            font-style: normal;
-            color: var(--gray-500);
-            font-weight: 600;
-        }
-
-        /* ===== TABLES ===== */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 35px 0;
-            font-size: 1rem;
-        }
-
-        .data-table th {
-            background: var(--black);
-            color: var(--white);
-            padding: 18px 20px;
-            text-align: right;
-            font-weight: 600;
-            border: 2px solid var(--black);
-        }
-
-        .data-table td {
-            padding: 16px 20px;
-            border: 2px solid var(--black);
-            text-align: right;
-        }
-
-        .data-table tr:nth-child(even) {
-            background: var(--gray-100);
-        }
-
-        .data-table tr:hover {
-            background: var(--gray-200);
-        }
-
-        /* ===== IMAGES ===== */
-        .book-image {
-            width: 100%;
-            max-width: 600px;
-            margin: 35px auto;
-            display: block;
-            border: 3px solid var(--black);
-            filter: grayscale(100%);
-        }
-
-        .image-caption {
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--gray-500);
-            margin-top: 10px;
-            font-style: italic;
-        }
-
-        /* ===== DIAGRAMS (CSS) ===== */
-        .diagram {
-            width: 100%;
-            max-width: 700px;
-            margin: 40px auto;
-            padding: 40px;
-            border: 3px solid var(--black);
-            background: var(--white);
-        }
-
-        .diagram-title {
-            text-align: center;
-            font-weight: 700;
-            font-size: 1.3rem;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--black);
-        }
-
-        .diagram-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .diagram-node {
-            padding: 20px 40px;
-            border: 3px solid var(--black);
-            text-align: center;
-            font-weight: 700;
-            font-size: 1.1rem;
-            min-width: 200px;
+        
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(99, 102, 241, 0.3);
+            border-radius: 50%;
+            display: inline-block;
             position: relative;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
         }
-
-        .diagram-node.owner {
-            background: var(--black);
-            color: var(--white);
-        }
-
-        .diagram-node.manager {
-            background: var(--gray-800);
-            color: var(--white);
-        }
-
-        .diagram-node.worker {
-            background: var(--white);
-            color: var(--black);
-        }
-
-        .diagram-arrow {
-            width: 2px;
-            height: 30px;
-            background: var(--black);
-            position: relative;
-        }
-
-        .diagram-arrow::after {
-            content: '▼';
+        
+        .loader::after {
+            content: '';  
+            box-sizing: border-box;
             position: absolute;
-            bottom: -15px;
             left: 50%;
-            transform: translateX(-50%);
-            font-size: 12px;
-        }
-
-        .diagram-row {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        /* ===== NOTES FEATURE ===== */
-        .notes-panel {
-            position: fixed;
-            top: 0;
-            right: -400px;
-            width: 400px;
-            height: 100%;
-            background: var(--white);
-            border-left: 3px solid var(--black);
-            z-index: 1000;
-            transition: right 0.4s ease;
-            display: flex;
-            flex-direction: column;
-            box-shadow: -5px 0 20px rgba(0,0,0,0.1);
-        }
-
-        .notes-panel.open {
-            right: 0;
-        }
-
-        .notes-header {
-            padding: 25px;
-            border-bottom: 2px solid var(--black);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .notes-header h3 {
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
-
-        .notes-close {
-            background: none;
-            border: 2px solid var(--black);
+            top: 50%;
+            transform: translate(-50%, -50%);
             width: 40px;
             height: 40px;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: all 0.3s;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-bottom-color: #6366f1;
         }
-
-        .notes-close:hover {
-            background: var(--black);
-            color: var(--white);
+        
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-
-        .notes-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        .note-item {
-            border: 2px solid var(--gray-300);
-            padding: 15px;
-            margin-bottom: 15px;
-            background: var(--gray-100);
+        
+        .comparison-slider {
             position: relative;
+            overflow: hidden;
+            cursor: ew-resize;
         }
-
-        .note-item .note-text {
-            font-size: 0.95rem;
-            line-height: 1.8;
-            margin-bottom: 10px;
-        }
-
-        .note-item .note-date {
-            font-size: 0.75rem;
-            color: var(--gray-400);
-        }
-
-        .note-item .note-delete {
+        
+        .comparison-slider .before {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            background: var(--black);
-            color: var(--white);
-            border: none;
-            width: 25px;
-            height: 25px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        .notes-input-area {
-            padding: 20px;
-            border-top: 2px solid var(--black);
-        }
-
-        .notes-input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid var(--black);
-            background: var(--white);
-            font-family: inherit;
-            font-size: 1rem;
-            resize: vertical;
-            min-height: 100px;
-            outline: none;
-        }
-
-        .notes-add-btn {
-            width: 100%;
-            padding: 12px;
-            background: var(--black);
-            color: var(--white);
-            border: 2px solid var(--black);
-            font-family: inherit;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: all 0.3s;
-        }
-
-        .notes-add-btn:hover {
-            background: var(--white);
-            color: var(--black);
-        }
-
-        .notes-toggle {
-            position: fixed;
-            bottom: 30px;
-            left: 30px;
-            width: 60px;
-            height: 60px;
-            background: var(--black);
-            color: var(--white);
-            border: 3px solid var(--black);
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.5rem;
-            z-index: 999;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .notes-toggle:hover {
-            background: var(--white);
-            color: var(--black);
-            transform: scale(1.1);
-        }
-
-        .notes-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #cc0000;
-            color: var(--white);
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-        }
-
-        /* ===== TOOLTIP FOR COPY BLOCK ===== */
-        .copy-block {
-            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 50%;
             height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 9998;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
+            overflow: hidden;
+            border-right: 2px solid #6366f1;
         }
-
-        .copy-block.active {
-            display: flex;
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(99, 102, 241, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
         }
-
-        .copy-block-text {
-            color: var(--white);
-            font-size: 1.5rem;
-            font-weight: 700;
-            text-align: center;
-            padding: 20px;
+        
+        .btn-glow:hover {
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
         }
-
-        /* ===== FOOTER ===== */
-        .book-footer {
-            text-align: center;
-            padding: 60px 20px;
-            border-top: 2px solid var(--black);
-            margin-top: 60px;
+        
+        .preset-bg {
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
-
-        .book-footer p {
-            font-size: 0.9rem;
-            color: var(--gray-500);
-            margin-bottom: 10px;
+        
+        .preset-bg:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
         }
-
-        /* ===== SCROLLBAR ===== */
-        ::-webkit-scrollbar {
-            width: 8px;
+        
+        .preset-bg.active {
+            ring: 2px solid #6366f1;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
         }
-
-        ::-webkit-scrollbar-track {
-            background: var(--gray-100);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--black);
-        }
-
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .login-box {
-                padding: 40px 30px;
-            }
-            
-            .book-header h1 {
-                font-size: 2rem;
-            }
-            
-            .chapter-title {
-                font-size: 1.5rem;
-            }
-            
-            .notes-panel {
-                width: 100%;
-                right: -100%;
-            }
-            
-            .chapter-content {
-                font-size: 1rem;
-                line-height: 2;
-            }
-        }
-
-        /* ===== HIGHLIGHT ===== */
-        ::selection {
-            background: var(--black);
-            color: var(--white);
-        }
-
-        /* ===== PRINT PREVENTION ===== */
-        @media print {
-            body { display: none !important; }
+        
+        canvas {
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
-<body>
+<body class="text-white min-h-screen bg-pattern mesh-gradient">
 
-    <!-- COPY BLOCK OVERLAY -->
-    <div class="copy-block" id="copyBlock">
-        <div class="copy-block-text">🚫 النسخ واللقطة الشاشة محظورة<br>هذا المحتوى محمي</div>
-    </div>
+    <!-- Background Particles -->
+    <div id="particles" class="fixed inset-0 pointer-events-none z-0"></div>
 
-    <!-- LOGIN SCREEN -->
-    <div id="loginScreen">
-        <div class="login-box">
-            <h1>نظرية الشركة الذاتية</h1>
-            <p class="subtitle">كتاب تفاعلي - النسخة الأولى</p>
-            <input type="text" class="login-input" id="username" placeholder="اسم المستخدم" autocomplete="off">
-            <input type="password" class="login-input" id="password" placeholder="كلمة المرور" autocomplete="off">
-            <button class="login-btn" onclick="doLogin()">الدخول إلى الكتاب</button>
-            <p class="login-error" id="loginError">اسم المستخدم أو كلمة المرور غير صحيحة</p>
-        </div>
-    </div>
-
-    <!-- NOTES PANEL -->
-    <div class="notes-panel" id="notesPanel">
-        <div class="notes-header">
-            <h3>📝 ملاحظاتي</h3>
-            <button class="notes-close" onclick="toggleNotes()">✕</button>
-        </div>
-        <div class="notes-list" id="notesList">
-            <!-- Notes will appear here -->
-        </div>
-        <div class="notes-input-area">
-            <textarea class="notes-input" id="noteInput" placeholder="اكتب ملاحظتك هنا..."></textarea>
-            <button class="notes-add-btn" onclick="addNote()">إضافة ملاحظة</button>
-        </div>
-    </div>
-
-    <!-- NOTES TOGGLE BUTTON -->
-    <button class="notes-toggle" onclick="toggleNotes()">
-        📝
-        <span class="notes-count" id="notesCount" style="display:none">0</span>
-    </button>
-
-    <!-- BOOK CONTENT -->
-    <div id="bookContainer">
-        
-        <!-- HEADER -->
-        <div class="book-header">
-            <h1>نظرية الشركة الذاتية</h1>
-            <p class="author">فلسفة العقل والتعامل مع الذات</p>
-            <p class="date">إصدار خاص - 2026</p>
-        </div>
-
-        <!-- CHAPTER 1 -->
-        <div class="chapter">
-            <h2 class="chapter-title"><span class="chapter-number">1</span>مقدمة: الشركة التي أنت</h2>
-            <div class="chapter-content">
-                <p>
-                    تصوّر نفسك شركة كاملة. ليست شركة عادية، بل شركة متكاملة تديرها أنت، وتملكها أنت، وتعمل فيها أنت. هذه ليست مجرد استعارة أدبية، بل هي طريقة فهم عميقة لكيفية عمل عقلك وجسدك ومشاعرك.
-                </p>
-                
-                <div class="quote-box">
-                    "الإنسان ليس كائناً واحداً، بل هو مؤسسة متعددة الأقسام، وكل قسم له دوره ووظيفته، والفشل يأتي حين نجعل قسماً واحداً يتحكم في كل شيء."
-                    <span class="author-quote">— مقدمة النظرية</span>
-                </div>
-
-                <p>
-                    في هذه النظرية، ننظر إلى الجسم البشري كشركة مؤلفة من ثلاثة أقسام رئيسية، كل منها له وظيفته المحددة، وكل منها يحتاج إلى الآخر. الفهم الخاطئ لعلاقة هذه الأقسام هو سبب معظم مشاكلنا النفسية والعقلية.
-                </p>
-
-                <!-- DIAGRAM 1 -->
-                <div class="diagram">
-                    <div class="diagram-title">🔺 هرم الشركة الذاتية</div>
-                    <div class="diagram-box">
-                        <div class="diagram-node owner">👤 صاحب الشركة<br><small style="font-weight:400">(الإنسان - صانع القرار النهائي)</small></div>
-                        <div class="diagram-arrow"></div>
-                        <div class="diagram-node manager">🧠 المدير<br><small style="font-weight:400">(العقل - المخطط والمحلل)</small></div>
-                        <div class="diagram-arrow"></div>
-                        <div class="diagram-row">
-                            <div class="diagram-node worker">❤️ العمال: المشاعر<br><small style="font-weight:400">(التنفيذ العاطفي)</small></div>
-                            <div class="diagram-node worker">⚡ العمال: النتائج<br><small style="font-weight:400">(التنفيذ المادي)</small></div>
-                        </div>
+    <!-- Header -->
+    <header class="fixed top-0 w-full z-50 glass border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center shadow-lg shadow-primary/30">
+                        <i class="fas fa-wand-magic-sparkles text-white text-lg"></i>
                     </div>
+                    <span class="text-xl font-bold gradient-text">AI Photo Studio</span>
                 </div>
-
-                <p>
-                    <strong>المشكلة الكبرى:</strong> معظم الناس يتركون "المدير" (العقل) يتخذ كل القرارات بمفرده. عندما يشعر المدير بالضعف أو الارتباك، يستسلم صاحب الشركة (أنت) فوراً. هذا هو الخطأ الجوهري.
-                </p>
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="#features" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">المميزات</a>
+                    <a href="#editor" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">المحرر</a>
+                    <a href="#how-it-works" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">كيف يعمل</a>
+                </nav>
+                <button onclick="scrollToEditor()" class="gradient-bg px-6 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-opacity btn-glow">
+                    جرب الآن مجاناً
+                </button>
             </div>
         </div>
+    </header>
 
-        <!-- CHAPTER 2 -->
-        <div class="chapter">
-            <h2 class="chapter-title"><span class="chapter-number">2</span>القسم الأول: صاحب الشركة</h2>
-            <div class="chapter-content">
-                <p>
-                    <strong>صاحب الشركة</strong> هو "أنت" الحقيقي — الجزء الواعي منك الذي يتخذ القرارات النهائية. هو ليس عقلك، بل هو الذي <em>يستخدم</em> عقلك. هو ليس مشاعرك، بل هو الذي <em>يشعر</em> بها و<em>يديرها</em>.
-                </p>
-
-                <img src="https://kimi-web-img.moonshot.cn/img/c8.alamy.com/93a975f791531a8efae2d750b74ddcdd95b91f7f.jpg" alt="الهيكل التنظيمي" class="book-image">
-                <p class="image-caption">الشكل 1: الهيكل التنظيمي للشركة الذاتية</p>
-
-                <p>
-                    صاحب الشركة هو المسؤول النهائي. هو الذي يقرر الاتجاه العام، هو الذي يضع الرؤية، وهو الذي يحاسب "المدير" عندما يخطئ. لكن — وهنا المشكلة — كثير منا ينسى أنه صاحب الشركة ويترك المدير يدير كل شيء.
-                </p>
-
-                <div class="quote-box">
-                    "عندما تترك المدير يحل محلك، تصبح أنت مجرد موظف في شركتك الخاصة."
-                    <span class="author-quote">— فصل صاحب الشركة</span>
-                </div>
-
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>الدور</th>
-                            <th>المسؤوليات</th>
-                            <th>الأخطاء الشائعة</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>صاحب الشركة</td>
-                            <td>الرؤية، القرار النهائي، المساءلة</td>
-                            <td>التخلي عن السلطة للمدير</td>
-                        </tr>
-                        <tr>
-                            <td>المدير (العقل)</td>
-                            <td>التخطيط، التحليل، التنظيم</td>
-                            <td>التصرف كصاحب الشركة</td>
-                        </tr>
-                        <tr>
-                            <td>العمال (المشاعر)</td>
-                            <td>التنفيذ العاطفي، التحفيز</td>
-                            <td>التمرد أو الكسل</td>
-                        </tr>
-                        <tr>
-                            <td>العمال (النتائج)</td>
-                            <td>التنفيذ المادي، الإنتاج</td>
-                            <td>العمل بدون توجيه</td>
-                        </tr>
-                    </tbody>
-                </table>
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 px-4 overflow-hidden">
+        <div class="max-w-7xl mx-auto text-center relative z-10">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-light mb-8 animate-float">
+                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                <span class="text-sm text-gray-300">يعمل بالكامل في المتصفح - لا يحتاج API</span>
             </div>
-        </div>
-
-        <!-- CHAPTER 3 -->
-        <div class="chapter">
-            <h2 class="chapter-title"><span class="chapter-number">3</span>القسم الثاني: المدير (العقل)</h2>
-            <div class="chapter-content">
-                <p>
-                    <strong>المدير هو العقل.</strong> وهو موظف ممتاز — عندما يعمل في حدود وظيفته. لكنه ليس صاحب الشركة. العقل أداة قوية جداً، لكنه أداة فقط. المشكلة أن العقل يحب أن يعتقد أنه صاحب الشركة.
-                </p>
-
-                <img src="https://kimi-web-img.moonshot.cn/img/static.vecteezy.com/530ec6eb21dfd2c7b8bbd3970898fe8b94267f8c.jpg" alt="العقل والمشاعر" class="book-image">
-                <p class="image-caption">الشكل 2: العقل كمدير يدير المشاعر</p>
-
-                <p>
-                    العقل يقوم بأعمال رائعة: يحلل، يخطط، يتذكر، يتنبأ. لكن العقل له حدوده:
-                </p>
-
-                <ul style="margin: 20px 40px 30px; line-height: 2.5;">
-                    <li>العقل لا يعرف كل شيء — وهو يكره أن يعترف بذلك</li>
-                    <li>العقل يتعب — وعندما يتعب يصدر قرارات سيئة</li>
-                    <li>العقل يمكن أن يُخدع — بالعادات، بالمخاوف، بالأوهام</li>
-                    <li>العقل يحتاج إلى بيانات — وبدونها يعمل بالتخمين</li>
-                </ul>
-
-                <div class="quote-box">
-                    "العقل المدير المثالي هو الذي يعرف متى يطلب المساعدة، لا الذي يتظاهر بأنه يعرف كل شيء."
-                    <span class="author-quote">— فصل المدير</span>
-                </div>
-
-                <p>
-                    <strong>الخطأ الكبير:</strong> حين يواجه العقل مشكلة لا يستطيع حلها، يذهب إلى صاحب الشركة (أنت) ويقول: "لا أستطيع، استسلم". وهنا — وهنا بالذات — يقع معظم الناس في الفخ. يشعرون بأن "المدير" محتاج مساعدة، فيستسلمون هم أيضاً.
-                </p>
-            </div>
-        </div>
-
-        <!-- CHAPTER 4 -->
-        <div class="chapter">
-            <h2 class="chapter-title"><span class="chapter-number">4</span>القسم الثالث: العمال (المشاعر والنتائج)</h2>
-            <div class="chapter-content">
-                <p>
-                    <strong>العمال هم المشاعر والنتائج.</strong> هم القوة التنفيذية في الشركة. بدونهم، لا يوجد عمل. لكنهم يحتاجون إلى إدارة. مشاعرك غير منضبطة هي عمال متمردين. نتائجك العشوائية هي عمال بلا توجيه.
-                </p>
-
-                <img src="https://kimi-web-img.moonshot.cn/img/static.vecteezy.com/2e23053507263478f65b0f6c20f4df81343e8c5f.jpg" alt="العقل والجسد" class="book-image">
-                <p class="image-caption">الشكل 3: التوازن بين العقل والجسد</p>
-
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>نوع العمال</th>
-                            <th>الوظيفة</th>
-                            <th>حين يتمرد</th>
-                            <th>الحل</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>المشاعر</td>
-                            <td>التحفيز، الحدس، الطاقة</td>
-                            <td>القلق، الاكتئاب، الغضب</td>
-                            <td>الاعتراف بها، عدم قمعها</td>
-                        </tr>
-                        <tr>
-                            <td>النتائج (الجسد)</td>
-                            <td>التنفيذ المادي، العمل</td>
-                            <td>الخمول، الإرهاق، المرض</td>
-                            <td>الراحة، التغذية، الحركة</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <p>
-                    العمال لا يتمردون بدون سبب. عادة ما يتمردون لأن المدير (العقل) يعاملهم بقسوة، أو لأن صاحب الشركة (أنت) مهملهم. عندما تقمع مشاعرك، أنت لا تحل المشكلة — أنت تُضرب عمالك وتتوقع منهم أن يعملوا بجد!
-                </p>
-            </div>
-        </div>
-
-        <!-- CHAPTER 5 -->
-        <div class="chapter">
-            <h2 class="chapter-title"><span class="chapter-number">5</span>المشكلة: حين يستسلم صاحب الشركة</h2>
-            <div class="chapter-content">
-                <p>
-                    هذه هي لب النظرية. هذه هي المشكلة التي تسبب معظم آلامنا:
-                </p>
-
-                <div class="quote-box" style="border-right-color: #cc0000; background: #fff5f5;">
-                    <strong>المشكلة:</strong> حين يقول المدير (العقل) "لا أستطيع"، يذهب إلى صاحب الشركة (أنت) ويقول له "استسلم". وبدلاً من أن يقول صاحب الشركة "حسناً، دعنا نبحث عن حل" — <strong>يستسلم هو أيضاً.</strong>
-                    <span class="author-quote">— لب المشكلة</span>
-                </div>
-
-                <p>
-                    لماذا يستسلم صاحب الشركة؟ لأنه يخلط بين "المدير محتاج مساعدة" و"المهمة مستحيلة". عندما يشعر بأن عقله ضعيف، يعتقد أن <em>هو</em> ضعيف. وهذا خطأ فادح.
-                </p>
-
-                <img src="https://kimi-web-img.moonshot.cn/img/static.vecteezy.com/530ec6eb21dfd2c7b8bbd3970898fe8b94267f8c.jpg" alt="الاستسلام" class="book-image">
-                <p class="image-caption">الشكل 4: الاستسلام حين يطلب المدير المساعدة</p>
-
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>الموقف</th>
-                            <th>رد الفعل الخاطئ (الاستسلام)</th>
-                            <th>رد الفعل الصحيح (البحث)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>العقل يقول "لا أفهم"</td>
-                            <td>"أنا غبي، أستسلم"</td>
-                            <td>"المدير يحتاج بيانات، لنبحث"</td>
-                        </tr>
-                        <tr>
-                            <td>العقل يقول "أنا خائف"</td>
-                            <td>"أنا ضعيف، أستسلم"</td>
-                            <td>"العمال (المشاعر) يحتاجون دعماً"</td>
-                        </tr>
-                        <tr>
-                            <td>العقل يقول "فشلت"</td>
-                            <td>"أنا فاشل، أستسلم"</td>
-                            <td>"اجتماع طارئ: ما البدائل؟"</td>
-                        </tr>
-                        <tr>
-                            <td>العقل يقول "مستحيل"</td>
-                            <td>"مستحيل فعلاً، أستسلم"</td>
-                            <td>"المدير متعب، لنستريح ثم نبحث"</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- CHAPTER 6 -->
-        <div class="chapter">
-            <h2 class="chapter-title"><span class="chapter-number">6</span>الحل: اجتماع طارئ مع الواقع</h2>
-            <div class="chapter-content">
-                <p>
-                    <strong>الحل ليس الاستسلام.</strong> الحل هو أن يدعو صاحب الشركة (أنت) إلى <strong>اجتماع طارئ</strong> — ليس اجتماعاً للاستسلام، بل اجتماعاً للبحث.
-                </p>
-
-                <div class="diagram">
-                    <div class="diagram-title">⚡ بروتوكول الاجتماع الطارئ</div>
-                    <div class="diagram-box">
-                        <div class="diagram-node owner">1️⃣ صاحب الشركة يتدخل<br><small>"أنا هنا، لنبحث"</small></div>
-                        <div class="diagram-arrow"></div>
-                        <div class="diagram-node manager">2️⃣ دعم المدير نفسياً<br><small>"أنت لست وحيداً"</small></div>
-                        <div class="diagram-arrow"></div>
-                        <div class="diagram-node worker">3️⃣ تهدئة العمال (المشاعر)<br><small>"أشعر بك، لكن لنستمر"</small></div>
-                        <div class="diagram-arrow"></div>
-                        <div class="diagram-node worker">4️⃣ البحث في الواقع<br><small>"ما هي الحقائق؟ ما البدائل؟"</small></div>
-                        <div class="diagram-arrow"></div>
-                        <div class="diagram-node owner">5️⃣ قرار جديد بناءً على الحقائق<br><small>"هذا هو الطريق"</small></div>
-                    </div>
-                </div>
-
-                <p>
-                    <strong>الخطوة الأولى والأهم:</strong> <em>الدعم النفسي للمدير.</em> عندما يقول عقلك "لا أستطيع"، لا تتركه يتحول إلى "أنت لا تستطيع". قل له: "حسناً، أنت متعب. دعنا نستريح قليلاً. ثم دعنا نبحث."
-                </p>
-
-                <div class="quote-box">
-                    "الدعم النفسي للعقل ليس ضعفاً — إنه ذكاء. المدير الذي يشعر بالدعم يعمل أفضل بعشر مرات من المدير المهمل."
-                    <span class="author-quote">— فصل الاجتماع الطارئ</span>
-                </div>
-
-                <p>
-                    <strong>الخطوة الثانية:</strong> البحث في <strong>الواقع</strong>. ليس في الأوهام، ليس في المخاوف، بل في الحقائق. اسأل:
-                </p>
-
-                <ul style="margin: 20px 40px 30px; line-height: 2.5;">
-                    <li>ما هي الحقائق الفعلية؟ (وليس ما أخاف منه)</li>
-                    <li>ما البدائل المتاحة؟ (حتى لو كانت صعبة)</li>
-                    <li>ما الذي يمكنني فعله الآن؟ (وليس ما لا يمكن)</li>
-                    <li>من يمكنه مساعدتي؟ (الاستعانة بالخبراء)</li>
-                    <li>ما أصغر خطوة يمكنني البدء بها؟ (التقسيم)</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- CHAPTER 7 -->
-        <div class="chapter">
-            <h2 class="chapter-title"><span class="chapter-number">7</span>المغزى: لا تستسلم — ابحث أكثر</h2>
-            <div class="chapter-content">
-                <p>
-                    <strong>هذا هو المغزى النهائي:</strong> الإنسان لا يستسلم. عندما يقول العقل "مستحيل"، هذا ليس نهاية القصة — هذا بداية البحث. عندما تشعر بالضعف، هذا ليس دليلاً على أنك ضعيف — هذا دليل على أنك بحاجة لاجتماع طارئ مع نفسك.
-                </p>
-
-                <img src="https://kimi-web-img.moonshot.cn/img/cdn2.psychologytoday.com/56e478aef1c371263f1e12066aaa176dc363299a.jpg" alt="المرونة النفسية" class="book-image">
-                <p class="image-caption">الشكل 5: المرونة النفسية - البحث عن الحلول</p>
-
-                <div class="quote-box" style="border-right-color: var(--black); background: var(--gray-900); color: var(--white);">
-                    <strong>القانون الذهبي:</strong><br><br>
-                    "حين يستسلم المدير (العقل)، لا يستسلم صاحب الشركة (أنت).<br>
-                    حين يطلب المدير المساعدة، لا تتركه وحيداً.<br>
-                    حين يقول المدير 'مستحيل'، قل له 'دعنا نبحث'.<br>
-                    <strong>البحث هو الإجابة. الاستسلام ليس خياراً."</strong>
-                    <span class="author-quote" style="color: var(--gray-300);">— المغزى النهائي</span>
-                </div>
-
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>الموقف</th>
-                            <th>الاستسلام (الموت)</th>
-                            <th>البحث (الحياة)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>العقل يقول "لا أفهم"</td>
-                            <td>الإحباط والتوقف</td>
-                            <td>البحث عن مصادر جديدة</td>
-                        </tr>
-                        <tr>
-                            <td>العقل يقول "أنا خائف"</td>
-                            <td>الهروب والاختباء</td>
-                            <td>مواجهة الخوف بخطوات صغيرة</td>
-                        </tr>
-                        <tr>
-                            <td>العقل يقول "فشلت"</td>
-                            <td>الاعتقاد بأنك فاشل</td>
-                            <td>تحليل الفشل واستخلاص الدروس</td>
-                        </tr>
-                        <tr>
-                            <td>العقل يقول "مستحيل"</td>
-                            <td>قبول المستحيل</td>
-                            <td>تقسيم المشكلة والبحث عن ثغرات</td>
-                        </tr>
-                        <tr>
-                            <td>العقل يقول "محتاج مساعدة"</td>
-                            <td>الاستسلام للضعف</td>
-                            <td>طلب المساعدة كقوة لا ضعف</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <p>
-                    <strong>تذكر دائماً:</strong> أنت صاحب الشركة. العقل مديرك. المشاعر والنتائج عمالك. عندما يضعف المدير، أنت لا تضعف. عندما يتمرد العمال، أنت لا تنهار. أنت صاحب الشركة — وصاحب الشركة لا يستسلم. صاحب الشركة <strong>يبحث</strong>.
-                </p>
-            </div>
-        </div>
-
-        <!-- CHAPTER 8 -->
-        <div class="chapter">
-            <h2 class="chapter-title"><span class="chapter-number">8</span>الخلاصة: كن صاحب شركتك</h2>
-            <div class="chapter-content">
-                <p>
-                    نظرية الشركة الذاتية ليست مجرد استعارة — إنها طريقة للحياة. طريقة تذكرك بأنك أكبر من عقلك، وأقوى من مشاعرك، وأقدر مما تظن.
-                </p>
-
-                <div class="diagram">
-                    <div class="diagram-title">🎯 ملخص النظرية في نقاط</div>
-                    <div class="diagram-box">
-                        <div class="diagram-node owner">✅ أنا صاحب الشركة — أنا أقرر</div>
-                        <div class="diagram-arrow"></div>
-                        <div class="diagram-node manager">✅ العقل مدير — أدعمه لا أستسلم له</div>
-                        <div class="diagram-arrow"></div>
-                        <div class="diagram-node worker">✅ المشاعر عمال — أديرها لا أقمعها</div>
-                        <div class="diagram-arrow"></div>
-                        <div class="diagram-node worker">✅ النتائج عمال — أوجهها لا أهملها</div>
-                        <div class="diagram-arrow"></div>
-                        <div class="diagram-node owner" style="background: var(--black); color: var(--white);">
-                            🔥 <strong>المغزى: لا أستسلم — أبحث أكثر</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="quote-box">
-                    "الشركة التي أنت لن تفلس ما دمت أنت صاحبها. والعقل المدير لن يفشل ما دمت تدعمه. والعمال لن يتمردوا ما دمت تديرهم. <strong>الاستسلام ليس خياراً — البحث هو الطريق.</strong>"
-                    <span class="author-quote">— ختام الكتاب</span>
-                </div>
-
-                <p style="text-align: center; font-size: 1.3rem; font-weight: 700; margin-top: 50px; padding: 30px; border: 3px solid var(--black);">
-                    🖤 لا تستسلم. ابحث أكثر. أنت صاحب الشركة. 🤍
-                </p>
-            </div>
-        </div>
-
-        <!-- FOOTER -->
-        <div class="book-footer">
-            <p>نظرية الشركة الذاتية</p>
-            <p>إصدار خاص - 2026</p>
-            <p>جميع الحقوق محفوظة</p>
-            <p style="margin-top: 20px; font-size: 0.8rem; color: var(--gray-400);">
-                هذا الكتاب محمي ضد النسخ | ميزة الملاحظات متاحة للقارئ
+            
+            <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight">
+                <span class="block text-white">حوّل صورك</span>
+                <span class="block gradient-text">بقوة الذكاء الاصطناعي</span>
+            </h1>
+            
+            <p class="text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                أزل الخلفية، غيّر الإضاءة، وطبّق تأثيرات احترافية على صورك في ثوانٍ. كل المعالجة تتم محلياً في متصفحك لضمان الخصوصية التامة.
             </p>
-        </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+                <button onclick="scrollToEditor()" class="gradient-bg px-8 py-4 rounded-2xl text-lg font-bold hover:opacity-90 transition-all btn-glow flex items-center justify-center gap-2">
+                    <i class="fas fa-upload"></i>
+                    ارفع صورتك الآن
+                </button>
+                <button onclick="loadDemo()" class="glass px-8 py-4 rounded-2xl text-lg font-bold hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-play"></i>
+                    شاهد العرض التجريبي
+                </button>
+            </div>
 
-    </div>
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+                <div class="glass-light rounded-2xl p-4">
+                    <div class="text-3xl font-bold gradient-text">0</div>
+                    <div class="text-sm text-gray-400">تكلفة API</div>
+                </div>
+                <div class="glass-light rounded-2xl p-4">
+                    <div class="text-3xl font-bold gradient-text">100%</div>
+                    <div class="text-sm text-gray-400">خصوصية</div>
+                </div>
+                <div class="glass-light rounded-2xl p-4">
+                    <div class="text-3xl font-bold gradient-text">5s</div>
+                    <div class="text-sm text-gray-400">سرعة المعالجة</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Editor Section -->
+    <section id="editor" class="py-20 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">محرر الصور الذكي</h2>
+                <p class="text-gray-400">ارفع صورتك ودع الذكاء الاصطناعي يقوم بالباقي</p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Upload & Preview Area -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Upload Zone -->
+                    <div id="uploadZone" class="drop-zone rounded-3xl p-12 text-center relative overflow-hidden group cursor-pointer" onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="handleFileSelect(event)">
+                        
+                        <div id="uploadContent" class="relative z-10">
+                            <div class="w-24 h-24 mx-auto mb-6 rounded-3xl glass-light flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                <i class="fas fa-cloud-arrow-up text-4xl gradient-text"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-2">اسحب صورتك هنا أو انقر للرفع</h3>
+                            <p class="text-gray-400 mb-4">يدعم JPG, PNG, WEBP - الحد الأقصى 10MB</p>
+                            <div class="flex justify-center gap-2 text-sm text-gray-500">
+                                <span class="px-3 py-1 rounded-full glass-light">ذكاء اصطناعي محلي</span>
+                                <span class="px-3 py-1 rounded-full glass-light">لا يحتاج إنترنت سريع</span>
+                            </div>
+                        </div>
+
+                        <!-- Image Preview Container -->
+                        <div id="previewContainer" class="hidden relative z-10">
+                            <div class="relative inline-block">
+                                <canvas id="mainCanvas" class="rounded-2xl shadow-2xl max-h-[600px]"></canvas>
+                                <div id="processingOverlay" class="absolute inset-0 bg-black/60 rounded-2xl flex flex-col items-center justify-center hidden">
+                                    <span class="loader mb-4"></span>
+                                    <p class="text-white font-medium" id="processingText">جاري معالجة الصورة...</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex justify-center gap-3">
+                                <button onclick="resetImage()" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm">
+                                    <i class="fas fa-rotate-left ml-2"></i>إعادة تعيين
+                                </button>
+                                <button onclick="document.getElementById('fileInput').click()" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm">
+                                    <i class="fas fa-image ml-2"></i>صورة جديدة
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison View -->
+                    <div id="comparisonView" class="hidden glass rounded-3xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-lg">قبل وبعد</h3>
+                            <button onclick="toggleComparison()" class="text-sm text-primary hover:text-secondary transition-colors">
+                                <i class="fas fa-eye ml-1"></i>إخفاء/إظهار
+                            </button>
+                        </div>
+                        <div class="comparison-slider rounded-2xl overflow-hidden" id="comparisonSlider" onmousemove="handleComparisonMove(event)" ontouchmove="handleComparisonTouch(event)">
+                            <canvas id="afterCanvas" class="w-full"></canvas>
+                            <div class="before" id="beforeContainer">
+                                <canvas id="beforeCanvas" class="w-full"></canvas>
+                            </div>
+                            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center border-2 border-white/50 pointer-events-none">
+                                <i class="fas fa-arrows-left-right text-white text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls Panel -->
+                <div class="space-y-6">
+                    <!-- Background Controls -->
+                    <div class="glass rounded-3xl p-6">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                                <i class="fas fa-image text-primary"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold">الخلفية</h3>
+                                <p class="text-xs text-gray-400">اختر خلفية جديدة</p>
+                            </div>
+                        </div>
+
+                        <!-- Background Type -->
+                        <div class="grid grid-cols-2 gap-2 mb-4">
+                            <button onclick="setBgType('transparent')" id="btnTransparent" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm active">
+                                <i class="fas fa-checkered ml-2"></i>شفاف
+                            </button>
+                            <button onclick="setBgType('solid')" id="btnSolid" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm">
+                                <i class="fas fa-fill-drip ml-2"></i>لون صلب
+                            </button>
+                            <button onclick="setBgType('gradient')" id="btnGradient" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm">
+                                <i class="fas fa-rainbow ml-2"></i>تدرج
+                            </button>
+                            <button onclick="setBgType('image')" id="btnImage" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm">
+                                <i class="fas fa-images ml-2"></i>صورة
+                            </button>
+                        </div>
+
+                        <!-- Solid Color Picker -->
+                        <div id="solidColorControl" class="hidden mb-4">
+                            <label class="text-sm text-gray-400 mb-2 block">اختر اللون</label>
+                            <div class="flex gap-2 flex-wrap">
+                                <button onclick="setSolidColor('#ffffff')" class="w-10 h-10 rounded-xl bg-white border-2 border-gray-600 hover:scale-110 transition-transform"></button>
+                                <button onclick="setSolidColor('#000000')" class="w-10 h-10 rounded-xl bg-black border-2 border-gray-600 hover:scale-110 transition-transform"></button>
+                                <button onclick="setSolidColor('#ef4444')" class="w-10 h-10 rounded-xl bg-red-500 border-2 border-gray-600 hover:scale-110 transition-transform"></button>
+                                <button onclick="setSolidColor('#3b82f6')" class="w-10 h-10 rounded-xl bg-blue-500 border-2 border-gray-600 hover:scale-110 transition-transform"></button>
+                                <button onclick="setSolidColor('#10b981')" class="w-10 h-10 rounded-xl bg-green-500 border-2 border-gray-600 hover:scale-110 transition-transform"></button>
+                                <button onclick="setSolidColor('#f59e0b')" class="w-10 h-10 rounded-xl bg-amber-500 border-2 border-gray-600 hover:scale-110 transition-transform"></button>
+                                <button onclick="setSolidColor('#8b5cf6')" class="w-10 h-10 rounded-xl bg-violet-500 border-2 border-gray-600 hover:scale-110 transition-transform"></button>
+                                <button onclick="setSolidColor('#ec4899')" class="w-10 h-10 rounded-xl bg-pink-500 border-2 border-gray-600 hover:scale-110 transition-transform"></button>
+                                <input type="color" id="customColor" onchange="setSolidColor(this.value)" class="w-10 h-10 rounded-xl cursor-pointer border-2 border-gray-600">
+                            </div>
+                        </div>
+
+                        <!-- Gradient Presets -->
+                        <div id="gradientControl" class="hidden mb-4">
+                            <label class="text-sm text-gray-400 mb-2 block">تدرجات جاهزة</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div onclick="setGradient('linear-gradient(135deg, #667eea 0%, #764ba2 100%)')" class="preset-bg h-16 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600"></div>
+                                <div onclick="setGradient('linear-gradient(135deg, #f093fb 0%, #f5576c 100%)')" class="preset-bg h-16 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500"></div>
+                                <div onclick="setGradient('linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)')" class="preset-bg h-16 rounded-xl bg-gradient-to-br from-blue-400 to-cyan-400"></div>
+                                <div onclick="setGradient('linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)')" class="preset-bg h-16 rounded-xl bg-gradient-to-br from-green-400 to-teal-300"></div>
+                                <div onclick="setGradient('linear-gradient(135deg, #fa709a 0%, #fee140 100%)')" class="preset-bg h-16 rounded-xl bg-gradient-to-br from-pink-400 to-yellow-300"></div>
+                                <div onclick="setGradient('linear-gradient(135deg, #30cfd0 0%, #330867 100%)')" class="preset-bg h-16 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-900"></div>
+                            </div>
+                        </div>
+
+                        <!-- Image Backgrounds -->
+                        <div id="imageBgControl" class="hidden mb-4">
+                            <label class="text-sm text-gray-400 mb-2 block">خلفيات طبيعية</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div onclick="setImageBg('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80')" class="preset-bg h-16 rounded-xl bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&q=60')"></div>
+                                <div onclick="setImageBg('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80')" class="preset-bg h-16 rounded-xl bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=200&q=60')"></div>
+                                <div onclick="setImageBg('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80')" class="preset-bg h-16 rounded-xl bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=200&q=60')"></div>
+                                <div onclick="setImageBg('https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&q=80')" class="preset-bg h-16 rounded-xl bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=200&q=60')"></div>
+                                <div onclick="setImageBg('https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&q=80')" class="preset-bg h-16 rounded-xl bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=200&q=60')"></div>
+                                <div onclick="setImageBg('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&q=80')" class="preset-bg h-16 rounded-xl bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=200&q=60')"></div>
+                            </div>
+                        </div>
+
+                        <button onclick="removeBackground()" id="removeBgBtn" class="w-full gradient-bg py-3 rounded-xl font-bold hover:opacity-90 transition-opacity btn-glow mt-4 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <i class="fas fa-wand-magic-sparkles ml-2"></i>إزالة الخلفية بالذكاء الاصطناعي
+                        </button>
+                    </div>
+
+                    <!-- Lighting Controls -->
+                    <div class="glass rounded-3xl p-6">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                                <i class="fas fa-sun text-amber-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold">الإضاءة والألوان</h3>
+                                <p class="text-xs text-gray-400">عدّل إضاءة الصورة</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <label class="text-sm text-gray-300">السطوع</label>
+                                    <span id="brightnessVal" class="text-sm text-primary">100%</span>
+                                </div>
+                                <input type="range" min="0" max="200" value="100" oninput="updateLighting('brightness', this.value)" class="w-full h-2 rounded-lg appearance-none bg-gray-700 slider-thumb">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <label class="text-sm text-gray-300">التباين</label>
+                                    <span id="contrastVal" class="text-sm text-primary">100%</span>
+                                </div>
+                                <input type="range" min="0" max="200" value="100" oninput="updateLighting('contrast', this.value)" class="w-full h-2 rounded-lg appearance-none bg-gray-700 slider-thumb">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <label class="text-sm text-gray-300">الإشباع</label>
+                                    <span id="saturationVal" class="text-sm text-primary">100%</span>
+                                </div>
+                                <input type="range" min="0" max="200" value="100" oninput="updateLighting('saturation', this.value)" class="w-full h-2 rounded-lg appearance-none bg-gray-700 slider-thumb">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <label class="text-sm text-gray-300">درجة الحرارة</label>
+                                    <span id="warmthVal" class="text-sm text-primary">0</span>
+                                </div>
+                                <input type="range" min="-50" max="50" value="0" oninput="updateLighting('warmth', this.value)" class="w-full h-2 rounded-lg appearance-none bg-gray-700 slider-thumb">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <label class="text-sm text-gray-300">الظلال</label>
+                                    <span id="shadowsVal" class="text-sm text-primary">0</span>
+                                </div>
+                                <input type="range" min="-50" max="50" value="0" oninput="updateLighting('shadows', this.value)" class="w-full h-2 rounded-lg appearance-none bg-gray-700 slider-thumb">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <label class="text-sm text-gray-300">الإضاءة الاصطناعية</label>
+                                    <span id="lightVal" class="text-sm text-primary">0</span>
+                                </div>
+                                <input type="range" min="0" max="100" value="0" oninput="updateLighting('light', this.value)" class="w-full h-2 rounded-lg appearance-none bg-gray-700 slider-thumb">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="glass rounded-3xl p-6">
+                        <button onclick="downloadImage()" id="downloadBtn" class="w-full gradient-bg py-4 rounded-xl font-bold text-lg hover:opacity-90 transition-opacity btn-glow mb-3 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <i class="fas fa-download ml-2"></i>تحميل الصورة
+                        </button>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="resetAdjustments()" class="px-4 py-2 rounded-xl glass-light hover:bg-white/10 transition-colors text-sm">
+                                إعادة ضبط
+                            </button>
+                            <select id="formatSelect" class="px-4 py-2 rounded-xl glass-light bg-transparent text-sm border-none outline-none">
+                                <option value="png">PNG</option>
+                                <option value="jpeg">JPEG</option>
+                                <option value="webp">WEBP</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">لماذا محررنا الذكي؟</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">تقنيات متطورة تعمل محلياً في متصفحك</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass rounded-3xl p-8 hover:bg-white/5 transition-all group">
+                    <div class="w-14 h-14 rounded-2xl gradient-bg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-brain text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">ذكاء اصطناعي محلي</h3>
+                    <p class="text-gray-400 leading-relaxed">يعمل بنموذج الذكاء الاصطناعي مباشرة في متصفحك بدون إرسال صورك إلى أي خادم. خصوصية تامة وأمان كامل.</p>
+                </div>
+
+                <div class="glass rounded-3xl p-8 hover:bg-white/5 transition-all group">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-bolt text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">معالجة فورية</h3>
+                    <p class="text-gray-400 leading-relaxed">أزل الخلفية وغيّر الإضاءة في أقل من 5 ثوانٍ بفضل تقنيات WebGL المتقدمة والمعالجة المتوازية.</p>
+                </div>
+
+                <div class="glass rounded-3xl p-8 hover:bg-white/5 transition-all group">
+                    <div class="w-14 h-14 rounded-2xl bg-pink-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-wand-magic text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">تأثيرات احترافية</h3>
+                    <p class="text-gray-400 leading-relaxed">مكتبة ضخمة من الخلفيات والتدرجات والتأثيرات الضوئية الجاهزة لتجعل صورك تبدو كأنها من استوديو احترافي.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it Works -->
+    <section id="how-it-works" class="py-20 px-4">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">كيف يعمل؟</h2>
+                <p class="text-gray-400">ثلاث خطوات بسيطة للحصول على نتيجة احترافية</p>
+            </div>
+
+            <div class="space-y-12">
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    <div class="flex-1 text-right">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-bold mb-4">الخطوة 1</div>
+                        <h3 class="text-2xl font-bold mb-3">ارفع صورتك</h3>
+                        <p class="text-gray-400 leading-relaxed">اسحب الصورة أو انقر للرفع. يدعم المحرر جميع الصيغ الشائعة مع ضغط تلقائي للحفاظ على الجودة.</p>
+                    </div>
+                    <div class="w-24 h-24 rounded-3xl gradient-bg flex items-center justify-center shadow-2xl shadow-primary/30 flex-shrink-0">
+                        <i class="fas fa-upload text-4xl text-white"></i>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row-reverse items-center gap-8">
+                    <div class="flex-1 text-right">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/20 text-secondary text-sm font-bold mb-4">الخطوة 2</div>
+                        <h3 class="text-2xl font-bold mb-3">أزل الخلفية تلقائياً</h3>
+                        <p class="text-gray-400 leading-relaxed">اضغط على زر إزالة الخلفية ودع نموذج الذكاء الاصطناعي يحدد الشخص أو الموضوع بدقة عالية، حتى مع الشعر والتفاصيل الدقيقة.</p>
+                    </div>
+                    <div class="w-24 h-24 rounded-3xl bg-secondary flex items-center justify-center shadow-2xl shadow-secondary/30 flex-shrink-0">
+                        <i class="fas fa-wand-magic-sparkles text-4xl text-white"></i>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    <div class="flex-1 text-right">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/20 text-accent text-sm font-bold mb-4">الخطوة 3</div>
+                        <h3 class="text-2xl font-bold mb-3">خصّص وحمّل</h3>
+                        <p class="text-gray-400 leading-relaxed">اختر خلفية جديدة، عدّل الإضاءة والألوان، ثم حمّل صورتك عالية الجودة بصيغة PNG مع الشفافية.</p>
+                    </div>
+                    <div class="w-24 h-24 rounded-3xl bg-accent flex items-center justify-center shadow-2xl shadow-accent/30 flex-shrink-0">
+                        <i class="fas fa-download text-4xl text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 py-12 px-4 mt-20">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
+                    <i class="fas fa-wand-magic-sparkles text-white"></i>
+                </div>
+                <span class="text-2xl font-bold gradient-text">AI Photo Studio</span>
+            </div>
+            <p class="text-gray-500 mb-6">محرر صور ذكي يعمل بالكامل في المتصفح - خصوصية تامة</p>
+            <div class="flex justify-center gap-6 text-gray-400">
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-github text-xl"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-twitter text-xl"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-discord text-xl"></i></a>
+            </div>
+            <p class="text-gray-600 text-sm mt-8">© 2026 AI Photo Studio. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
 
     <script>
-        // ===== LOGIN SYSTEM =====
-        const CORRECT_USER = 'mohamed';
-        const CORRECT_PASS = '6677#';
+        // Global Variables
+        let originalImage = null;
+        let processedImage = null;
+        let maskData = null;
+        let currentBg = { type: 'transparent', value: null };
+        let lighting = {
+            brightness: 100,
+            contrast: 100,
+            saturation: 100,
+            warmth: 0,
+            shadows: 0,
+            light: 0
+        };
+        let isProcessing = false;
 
-        function doLogin() {
-            const user = document.getElementById('username').value.trim();
-            const pass = document.getElementById('password').value;
-            const error = document.getElementById('loginError');
-
-            if (user === CORRECT_USER && pass === CORRECT_PASS) {
-                document.getElementById('loginScreen').classList.add('hidden');
-                setTimeout(() => {
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('bookContainer').classList.add('active');
-                }, 800);
-            } else {
-                error.classList.add('show');
-                setTimeout(() => error.classList.remove('show'), 3000);
+        // Initialize Particles
+        function initParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 5 + 's';
+                particle.style.opacity = Math.random() * 0.5;
+                const size = Math.random() * 4 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                container.appendChild(particle);
+                
+                // Animate
+                animateParticle(particle);
             }
         }
 
-        // Enter key login
-        document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') doLogin();
-        });
-
-        // ===== NOTES SYSTEM =====
-        let notes = JSON.parse(localStorage.getItem('book_notes') || '[]');
-
-        function toggleNotes() {
-            document.getElementById('notesPanel').classList.toggle('open');
-            renderNotes();
-        }
-
-        function renderNotes() {
-            const list = document.getElementById('notesList');
-            const count = document.getElementById('notesCount');
+        function animateParticle(particle) {
+            const duration = Math.random() * 10000 + 10000;
+            const x = Math.random() * 100 - 50;
+            const y = Math.random() * 100 - 50;
             
-            if (notes.length === 0) {
-                list.innerHTML = '<p style="text-align:center; color:#999; padding:40px;">لا توجد ملاحظات بعد. اكتب ملاحظتك الأولى!</p>';
-                count.style.display = 'none';
+            particle.animate([
+                { transform: 'translate(0, 0)' },
+                { transform: `translate(${x}px, ${y}px)` }
+            ], {
+                duration: duration,
+                iterations: Infinity,
+                direction: 'alternate',
+                easing: 'ease-in-out'
+            });
+        }
+
+        // Drag and Drop
+        const uploadZone = document.getElementById('uploadZone');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, () => uploadZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, () => uploadZone.classList.remove('dragover'), false);
+        });
+
+        uploadZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length) handleFile(files[0]);
+        }
+
+        function handleFileSelect(e) {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        }
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('يرجى رفع ملف صورة فقط');
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                alert('حجم الملف كبير جداً. الحد الأقصى 10MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    originalImage = img;
+                    processedImage = img;
+                    maskData = null;
+                    displayImage(img);
+                    document.getElementById('removeBgBtn').disabled = false;
+                    document.getElementById('uploadContent').classList.add('hidden');
+                    document.getElementById('previewContainer').classList.remove('hidden');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function displayImage(img) {
+            const canvas = document.getElementById('mainCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Resize if too large
+            const maxDim = 1200;
+            let { width, height } = img;
+            if (width > maxDim || height > maxDim) {
+                const ratio = Math.min(maxDim / width, maxDim / height);
+                width *= ratio;
+                height *= ratio;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Update comparison canvases
+            updateComparisonCanvases();
+        }
+
+        async function removeBackground() {
+            if (!originalImage || isProcessing) return;
+            
+            isProcessing = true;
+            const overlay = document.getElementById('processingOverlay');
+            const text = document.getElementById('processingText');
+            overlay.classList.remove('hidden');
+            
+            try {
+                text.textContent = 'جاري تحميل نموذج الذكاء الاصطناعي...';
+                
+                // Use imgly background removal
+                const canvas = document.getElementById('mainCanvas');
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                
+                text.textContent = 'جاري إزالة الخلفية بالذكاء الاصطناعي...';
+                
+                const config = {
+                    progress: (p) => {
+                        text.textContent = `جاري المعالجة... ${Math.round(p * 100)}%`;
+                    }
+                };
+                
+                const resultBlob = await backgroundRemoval.removeBackground(blob, config);
+                const resultUrl = URL.createObjectURL(resultBlob);
+                
+                const resultImg = new Image();
+                resultImg.onload = () => {
+                    processedImage = resultImg;
+                    maskData = null; // We have the processed image directly
+                    
+                    // Draw result
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(resultImg, 0, 0, canvas.width, canvas.height);
+                    
+                    // Enable download
+                    document.getElementById('downloadBtn').disabled = false;
+                    
+                    // Show comparison
+                    document.getElementById('comparisonView').classList.remove('hidden');
+                    updateComparisonCanvases();
+                    
+                    // Apply current background if not transparent
+                    if (currentBg.type !== 'transparent') {
+                        applyBackground();
+                    }
+                    
+                    isProcessing = false;
+                    overlay.classList.add('hidden');
+                };
+                resultImg.src = resultUrl;
+                
+            } catch (error) {
+                console.error(error);
+                text.textContent = 'حدث خطأ. جرب صورة أخرى.';
+                setTimeout(() => {
+                    isProcessing = false;
+                    overlay.classList.add('hidden');
+                }, 2000);
+            }
+        }
+
+        function updateComparisonCanvases() {
+            if (!originalImage || !processedImage) return;
+            
+            const beforeCanvas = document.getElementById('beforeCanvas');
+            const afterCanvas = document.getElementById('afterCanvas');
+            const mainCanvas = document.getElementById('mainCanvas');
+            
+            beforeCanvas.width = mainCanvas.width;
+            beforeCanvas.height = mainCanvas.height;
+            afterCanvas.width = mainCanvas.width;
+            afterCanvas.height = mainCanvas.height;
+            
+            const beforeCtx = beforeCanvas.getContext('2d');
+            const afterCtx = afterCanvas.getContext('2d');
+            
+            beforeCtx.drawImage(originalImage, 0, 0, beforeCanvas.width, beforeCanvas.height);
+            afterCtx.drawImage(mainCanvas, 0, 0);
+        }
+
+        function handleComparisonMove(e) {
+            const slider = document.getElementById('comparisonSlider');
+            const rect = slider.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            document.getElementById('beforeContainer').style.width = Math.max(0, Math.min(100, x)) + '%';
+        }
+
+        function handleComparisonTouch(e) {
+            const slider = document.getElementById('comparisonSlider');
+            const rect = slider.getBoundingClientRect();
+            const x = ((e.touches[0].clientX - rect.left) / rect.width) * 100;
+            document.getElementById('beforeContainer').style.width = Math.max(0, Math.min(100, x)) + '%';
+        }
+
+        function toggleComparison() {
+            const view = document.getElementById('comparisonView');
+            view.classList.toggle('hidden');
+        }
+
+        // Background Controls
+        function setBgType(type) {
+            currentBg.type = type;
+            
+            // Update buttons
+            ['transparent', 'solid', 'gradient', 'image'].forEach(t => {
+                document.getElementById(`btn${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.remove('active', 'ring-2', 'ring-primary');
+            });
+            document.getElementById(`btn${type.charAt(0).toUpperCase() + type.slice(1)}`).classList.add('active');
+            
+            // Show/hide controls
+            document.getElementById('solidColorControl').classList.toggle('hidden', type !== 'solid');
+            document.getElementById('gradientControl').classList.toggle('hidden', type !== 'gradient');
+            document.getElementById('imageBgControl').classList.toggle('hidden', type !== 'image');
+            
+            if (processedImage && !isProcessing) {
+                applyBackground();
+            }
+        }
+
+        function setSolidColor(color) {
+            currentBg.value = color;
+            if (processedImage) applyBackground();
+        }
+
+        function setGradient(gradient) {
+            currentBg.value = gradient;
+            if (processedImage) applyBackground();
+        }
+
+        function setImageBg(url) {
+            currentBg.value = url;
+            if (processedImage) applyBackground();
+        }
+
+        function applyBackground() {
+            if (!processedImage) return;
+            
+            const canvas = document.getElementById('mainCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background
+            if (currentBg.type === 'solid' && currentBg.value) {
+                ctx.fillStyle = currentBg.value;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else if (currentBg.type === 'gradient' && currentBg.value) {
+                // Parse gradient
+                const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                // Simple gradient approximation - in real app would parse CSS gradient
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else if (currentBg.type === 'image' && currentBg.value) {
+                const bgImg = new Image();
+                bgImg.crossOrigin = 'anonymous';
+                bgImg.onload = () => {
+                    ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+                    drawSubject(ctx, canvas);
+                    applyLighting(ctx, canvas);
+                };
+                bgImg.src = currentBg.value;
+                return;
+            }
+            
+            drawSubject(ctx, canvas);
+            applyLighting(ctx, canvas);
+            updateComparisonCanvases();
+        }
+
+        function drawSubject(ctx, canvas) {
+            if (maskData) {
+                // Use mask to draw only subject
+                ctx.save();
+                // This is simplified - real implementation would use the actual mask
+                ctx.drawImage(processedImage, 0, 0, canvas.width, canvas.height);
+                ctx.restore();
             } else {
-                list.innerHTML = notes.map((note, i) => `
-                    <div class="note-item">
-                        <button class="note-delete" onclick="deleteNote(${i})">✕</button>
-                        <div class="note-text">${escapeHtml(note.text)}</div>
-                        <div class="note-date">${note.date}</div>
-                    </div>
-                `).join('');
-                count.style.display = 'flex';
-                count.textContent = notes.length;
+                // Processed image already has transparency
+                ctx.drawImage(processedImage, 0, 0, canvas.width, canvas.height);
             }
         }
 
-        function addNote() {
-            const input = document.getElementById('noteInput');
-            const text = input.value.trim();
-            if (!text) return;
-
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('ar-EG') + ' ' + now.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
-
-            notes.unshift({ text, date: dateStr });
-            localStorage.setItem('book_notes', JSON.stringify(notes));
-            input.value = '';
-            renderNotes();
+        function applyLighting(ctx, canvas) {
+            // Create temp canvas for lighting adjustments
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            tempCtx.drawImage(canvas, 0, 0);
+            
+            // Apply filters
+            const filters = [];
+            if (lighting.brightness !== 100) filters.push(`brightness(${lighting.brightness}%)`);
+            if (lighting.contrast !== 100) filters.push(`contrast(${lighting.contrast}%)`);
+            if (lighting.saturation !== 100) filters.push(`saturate(${lighting.saturation}%)`);
+            
+            if (filters.length > 0) {
+                tempCtx.filter = filters.join(' ');
+                tempCtx.drawImage(tempCanvas, 0, 0);
+                tempCtx.filter = 'none';
+            }
+            
+            // Warmth adjustment
+            if (lighting.warmth !== 0) {
+                const warmth = lighting.warmth;
+                const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    if (data[i + 3] > 0) { // If not transparent
+                        data[i] = Math.min(255, data[i] + warmth);     // Red
+                        data[i + 2] = Math.max(0, data[i + 2] - warmth); // Blue
+                    }
+                }
+                tempCtx.putImageData(imageData, 0, 0);
+            }
+            
+            // Shadows adjustment
+            if (lighting.shadows !== 0) {
+                const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                const shadowBoost = lighting.shadows;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    if (data[i + 3] > 0) {
+                        const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                        if (brightness < 128) {
+                            const factor = 1 + (shadowBoost / 100);
+                            data[i] = Math.min(255, data[i] * factor);
+                            data[i + 1] = Math.min(255, data[i + 1] * factor);
+                            data[i + 2] = Math.min(255, data[i + 2] * factor);
+                        }
+                    }
+                }
+                tempCtx.putImageData(imageData, 0, 0);
+            }
+            
+            // Artificial light effect
+            if (lighting.light > 0) {
+                const gradient = tempCtx.createRadialGradient(
+                    canvas.width / 2, canvas.height / 3, 0,
+                    canvas.width / 2, canvas.height / 3, canvas.width * 0.8
+                );
+                gradient.addColorStop(0, `rgba(255, 250, 240, ${lighting.light / 200})`);
+                gradient.addColorStop(1, 'rgba(255, 250, 240, 0)');
+                
+                tempCtx.globalCompositeOperation = 'screen';
+                tempCtx.fillStyle = gradient;
+                tempCtx.fillRect(0, 0, canvas.width, canvas.height);
+                tempCtx.globalCompositeOperation = 'source-over';
+            }
+            
+            // Clear and redraw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(tempCanvas, 0, 0);
         }
 
-        function deleteNote(index) {
-            notes.splice(index, 1);
-            localStorage.setItem('book_notes', JSON.stringify(notes));
-            renderNotes();
+        function updateLighting(type, value) {
+            lighting[type] = parseInt(value);
+            
+            // Update display value
+            const suffix = type === 'warmth' || type === 'shadows' || type === 'light' ? '' : '%';
+            document.getElementById(`${type}Val`).textContent = value + suffix;
+            
+            if (processedImage && !isProcessing) {
+                applyBackground();
+            }
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function resetAdjustments() {
+            lighting = {
+                brightness: 100,
+                contrast: 100,
+                saturation: 100,
+                warmth: 0,
+                shadows: 0,
+                light: 0
+            };
+            
+            // Reset sliders
+            ['brightness', 'contrast', 'saturation'].forEach(type => {
+                document.querySelector(`input[oninput="updateLighting('${type}', this.value)"]`).value = 100;
+                document.getElementById(`${type}Val`).textContent = '100%';
+            });
+            
+            ['warmth', 'shadows', 'light'].forEach(type => {
+                document.querySelector(`input[oninput="updateLighting('${type}', this.value)"]`).value = 0;
+                document.getElementById(`${type}Val`).textContent = '0';
+            });
+            
+            if (processedImage) applyBackground();
         }
 
-        // ===== COPY/SCREENSHOT PROTECTION =====
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        
-        document.addEventListener('keydown', e => {
-            // Block Ctrl+C, Ctrl+X, Ctrl+S, Ctrl+P, Ctrl+A, Ctrl+Shift+I, F12, PrintScreen
-            if ((e.ctrlKey || e.metaKey) && ['c','x','s','p','a'].includes(e.key.toLowerCase())) {
-                e.preventDefault();
-                showCopyBlock();
-            }
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
-                e.preventDefault();
-                showCopyBlock();
-            }
-            if (e.key === 'PrintScreen') {
-                e.preventDefault();
-                showCopyBlock();
-            }
-        });
-
-        function showCopyBlock() {
-            const block = document.getElementById('copyBlock');
-            block.classList.add('active');
-            setTimeout(() => block.classList.remove('active'), 2000);
+        function resetImage() {
+            if (!originalImage) return;
+            processedImage = originalImage;
+            maskData = null;
+            currentBg = { type: 'transparent', value: null };
+            resetAdjustments();
+            displayImage(originalImage);
+            document.getElementById('removeBgBtn').disabled = false;
+            document.getElementById('downloadBtn').disabled = true;
+            document.getElementById('comparisonView').classList.add('hidden');
+            
+            // Reset background buttons
+            setBgType('transparent');
         }
 
-        // Block drag selection
-        document.addEventListener('selectstart', e => e.preventDefault());
-        
-        // Block drag and drop
-        document.addEventListener('dragstart', e => e.preventDefault());
+        function downloadImage() {
+            const canvas = document.getElementById('mainCanvas');
+            const format = document.getElementById('formatSelect').value;
+            const mimeType = format === 'jpeg' ? 'image/jpeg' : format === 'webp' ? 'image/webp' : 'image/png';
+            
+            const link = document.createElement('a');
+            link.download = `edited-photo.${format}`;
+            link.href = canvas.toDataURL(mimeType, 0.95);
+            link.click();
+        }
 
-        // Visibility API for screenshot detection attempt
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                // Could add additional protection here
-            }
-        });
+        function scrollToEditor() {
+            document.getElementById('editor').scrollIntoView({ behavior: 'smooth' });
+        }
 
-        // ===== SCROLL PROGRESS (optional visual) =====
-        window.addEventListener('scroll', () => {
-            const scrollTop = window.scrollY;
-            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const progress = (scrollTop / docHeight) * 100;
-            // Could add a progress bar if desired
-        });
+        function loadDemo() {
+            scrollToEditor();
+            // Load a demo image
+            const demoImg = new Image();
+            demoImg.crossOrigin = 'anonymous';
+            demoImg.onload = () => {
+                originalImage = demoImg;
+                processedImage = demoImg;
+                displayImage(demoImg);
+                document.getElementById('removeBgBtn').disabled = false;
+                document.getElementById('uploadContent').classList.add('hidden');
+                document.getElementById('previewContainer').classList.remove('hidden');
+            };
+            demoImg.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&q=80';
+        }
+
+        // Initialize
+        initParticles();
     </script>
 </body>
 </html>
