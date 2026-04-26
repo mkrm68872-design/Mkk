@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>منصة تعليمية متكاملة | تعلم الآن</title>
+    <title>منصة تعليمية متكاملة | أكاديمية النجاح</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"></script>
     <style>
         * {
             margin: 0;
@@ -22,7 +25,6 @@
             padding: 20px;
         }
 
-        /* Container */
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -33,7 +35,6 @@
             min-height: 90vh;
         }
 
-        /* Header */
         .header {
             background: #2d3748;
             color: white;
@@ -80,12 +81,10 @@
             transform: scale(1.05);
         }
 
-        /* Main Content */
         .main-content {
             padding: 30px;
         }
 
-        /* Forms */
         .form-container {
             max-width: 500px;
             margin: 50px auto;
@@ -146,7 +145,6 @@
             font-weight: bold;
         }
 
-        /* Cards */
         .courses-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -161,7 +159,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             transition: 0.3s;
             cursor: pointer;
-            position: relative;
         }
 
         .course-card:hover {
@@ -195,11 +192,6 @@
             margin: 10px 0;
         }
 
-        .locked {
-            background: #e2e8f0;
-            color: #718096;
-        }
-
         .purchase-btn {
             background: #48bb78;
             width: auto;
@@ -207,12 +199,19 @@
             font-size: 14px;
         }
 
-        /* Admin Panel */
+        .watch-btn {
+            background: #ed8936;
+            width: auto;
+            padding: 8px 20px;
+            font-size: 14px;
+        }
+
         .admin-panel {
             background: white;
             border-radius: 20px;
             padding: 20px;
             margin-top: 20px;
+            margin-bottom: 30px;
         }
 
         .admin-section {
@@ -266,14 +265,20 @@
             font-weight: bold;
         }
 
-        .badge-paid {
+        .badge-blocked {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .badge-active {
             background: #c6f6d5;
             color: #22543d;
         }
 
-        .badge-free {
-            background: #fed7d7;
-            color: #742a2a;
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 20px;
         }
 
         @media (max-width: 768px) {
@@ -283,22 +288,25 @@
             .header {
                 flex-direction: column;
             }
+            table {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
 
 <div class="container" id="app">
-    <!-- Header -->
     <div class="header">
         <div class="logo">📚 منصة تعليمية | أكاديمية النجاح</div>
         <div id="userHeaderInfo"></div>
     </div>
-
-    <div class="main-content" id="mainContent"></div>
+    <div class="main-content" id="mainContent">
+        <div class="loading">⏳ جاري تحميل المنصة...</div>
+    </div>
 </div>
 
-<!-- Tawk.to Script (تم إدراجه كما أرسلته) -->
+<!-- Tawk.to Script -->
 <script type="text/javascript">
     var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
     (function () {
@@ -312,10 +320,25 @@
 </script>
 
 <script>
-    // ------------------- البيانات الأساسية -------------------
-    let students = JSON.parse(localStorage.getItem('students')) || [];
-    let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-    let purchasedCourses = JSON.parse(localStorage.getItem('purchasedCourses')) || {};
+    // ------------------- Firebase Configuration -------------------
+    const firebaseConfig = {
+        apiKey: "AIzaSyDQs1-RAW00so7ouBbRsCvEdwXQfWd1izU",
+        authDomain: "tryyyyy-23508.firebaseapp.com",
+        projectId: "tryyyyy-23508",
+        storageBucket: "tryyyyy-23508.firebasestorage.app",
+        messagingSenderId: "913680144851",
+        appId: "1:913680144851:web:54c6b76e6634c603fc3726",
+        measurementId: "G-99QRMSG8Z6"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // ------------------- Global Variables -------------------
+    let currentUser = null;
+    let studentsRef = null;
+    let purchasesRef = null;
 
     // تعريف الكورسات لكل صف
     const grades = {
@@ -353,22 +376,40 @@
 
     // توليد كود فريد
     function generateUniqueCode() {
-        let code;
-        do {
-            code = 'STU' + Math.floor(100000 + Math.random() * 900000);
-        } while (students.some(s => s.code === code));
-        return code;
+        return 'STU' + Math.floor(100000 + Math.random() * 900000);
     }
 
-    // تسجيل الطالب
-    function registerStudent(name, password, grade, phone, email) {
-        if (students.some(s => s.email === email)) {
+    // إنشاء حساب أدمن تلقائي إذا لم يوجد
+    async function ensureAdminAccount() {
+        const adminCheck = await database.ref('students').orderByChild('role').equalTo('admin').once('value');
+        if (!adminCheck.exists()) {
+            const adminId = Date.now();
+            await database.ref('students/' + adminId).set({
+                id: adminId,
+                name: "Administrator",
+                password: "admin123",
+                email: "admin@platform.com",
+                role: "admin",
+                isBlocked: false,
+                code: "ADMIN001",
+                phone: "01000000000",
+                grade: "1ثانوي",
+                createdAt: new Date().toISOString()
+            });
+        }
+    }
+
+    // تسجيل طالب جديد
+    async function registerStudent(name, password, grade, phone, email) {
+        const emailCheck = await database.ref('students').orderByChild('email').equalTo(email).once('value');
+        if (emailCheck.exists()) {
             alert("البريد الإلكتروني موجود مسبقاً!");
             return false;
         }
         const code = generateUniqueCode();
-        students.push({
-            id: Date.now(),
+        const newId = Date.now();
+        const studentData = {
+            id: newId,
             name,
             password,
             grade,
@@ -378,125 +419,169 @@
             isBlocked: false,
             role: "student",
             createdAt: new Date().toISOString()
-        });
-        localStorage.setItem('students', JSON.stringify(students));
-        alert(`تم إنشاء حساب بنجاح! كودك الفريد هو: ${code} . احتفظ به للرجوع إليه.`);
+        };
+        await database.ref('students/' + newId).set(studentData);
+        alert(`✅ تم إنشاء حساب بنجاح!\n🎫 كودك الفريد هو: ${code}\nاحتفظ به للرجوع إليه.`);
         return true;
     }
 
     // تسجيل الدخول
-    function loginStudent(emailOrCode, password) {
-        const user = students.find(s => (s.email === emailOrCode || s.code === emailOrCode) && s.password === password && !s.isBlocked);
-        if (user) {
-            currentUser = user;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            alert(`مرحباً ${user.name}`);
-            renderApp();
-            return true;
-        } else {
-            alert("بيانات غير صحيحة أو الحساب محظور!");
-            return false;
+    async function loginStudent(emailOrCode, password) {
+        let snapshot = await database.ref('students').orderByChild('email').equalTo(emailOrCode).once('value');
+        if (!snapshot.exists()) {
+            snapshot = await database.ref('students').orderByChild('code').equalTo(emailOrCode).once('value');
         }
-    }
-
-    // تسجيل الخروج
-    function logout() {
-        currentUser = null;
-        localStorage.removeItem('currentUser');
-        renderApp();
+        
+        if (snapshot.exists()) {
+            let student = null;
+            snapshot.forEach(child => { student = child.val(); });
+            if (student.password === password && !student.isBlocked) {
+                currentUser = student;
+                localStorage.setItem('currentUserId', currentUser.id);
+                alert(`مرحباً ${student.name}`);
+                renderApp();
+                return true;
+            } else if (student.isBlocked) {
+                alert("🚫 حسابك محظور! تواصل مع الإدارة.");
+                return false;
+            } else {
+                alert("كلمة المرور غير صحيحة!");
+                return false;
+            }
+        }
+        alert("❌ لم يتم العثور على حساب بهذه البيانات");
+        return false;
     }
 
     // شراء كورس
-    function purchaseCourse(courseId, price) {
+    async function purchaseCourse(courseId, price) {
         if (!currentUser) return;
-        if (!purchasedCourses[currentUser.id]) purchasedCourses[currentUser.id] = [];
-        if (purchasedCourses[currentUser.id].includes(courseId)) {
+        const purchaseCheck = await database.ref(`purchases/${currentUser.id}/${courseId}`).once('value');
+        if (purchaseCheck.exists()) {
             alert("你已经购买了该课程!");
             return;
         }
-        if (confirm(`شراء الكورس بسعر ${price} جنيه؟ (محاكاة دفع)`)) {
-            purchasedCourses[currentUser.id].push(courseId);
-            localStorage.setItem('purchasedCourses', JSON.stringify(purchasedCourses));
-            alert("تم شراء الكورس بنجاح! يمكنك الآن مشاهدة المحتوى.");
+        if (confirm(`💰 شراء الكورس بسعر ${price} جنيه؟ (محاكاة دفع)`)) {
+            await database.ref(`purchases/${currentUser.id}/${courseId}`).set({
+                courseId: courseId,
+                purchasedAt: new Date().toISOString(),
+                price: price
+            });
+            alert("✅ تم شراء الكورس بنجاح! يمكنك الآن مشاهدة المحتوى.");
             renderApp();
         }
     }
 
-    // إضافة طالب بواسطة الأدمن
-    function adminAddStudent(name, password, grade, phone, email) {
-        if (students.some(s => s.email === email)) {
+    // إضافة طالب بواسطة الأدمن (ريل تايم)
+    async function adminAddStudent(name, password, grade, phone, email) {
+        const emailCheck = await database.ref('students').orderByChild('email').equalTo(email).once('value');
+        if (emailCheck.exists()) {
             alert("البريد موجود مسبقاً");
             return false;
         }
         const code = generateUniqueCode();
-        students.push({
-            id: Date.now(),
-            name,
-            password,
-            grade,
-            phone,
-            email,
-            code,
-            isBlocked: false,
-            role: "student"
+        const newId = Date.now();
+        await database.ref('students/' + newId).set({
+            id: newId, name, password, grade, phone, email, code,
+            isBlocked: false, role: "student", createdAt: new Date().toISOString()
         });
-        localStorage.setItem('students', JSON.stringify(students));
-        alert(`تم إضافة الطالب ${name} بنجاح، كود الطالب: ${code}`);
-        renderApp();
+        alert(`✅ تم إضافة الطالب ${name} بنجاح، كود الطالب: ${code}`);
         return true;
     }
 
-    // حظر طالب
-    function toggleBlockStudent(studentId) {
-        const student = students.find(s => s.id == studentId);
+    // حظر/فك حظر طالب
+    async function toggleBlockStudent(studentId) {
+        const studentRef = database.ref(`students/${studentId}`);
+        const snapshot = await studentRef.once('value');
+        const student = snapshot.val();
         if (student) {
-            student.isBlocked = !student.isBlocked;
-            localStorage.setItem('students', JSON.stringify(students));
-            if (currentUser && currentUser.id == studentId && student.isBlocked) {
-                logout();
-                alert("تم حظر حسابك، تواصل مع الإدارة.");
-            } else {
+            await studentRef.update({ isBlocked: !student.isBlocked });
+            if (currentUser && currentUser.id == studentId && !student.isBlocked) {
+                // تم حظر المستخدم الحالي
+                currentUser = null;
+                localStorage.removeItem('currentUserId');
                 renderApp();
+                alert("🚫 تم حظر حسابك، تواصل مع الإدارة.");
+            } else {
+                alert(`✅ تم ${student.isBlocked ? 'فك الحظر عن' : 'حظر'} الطالب`);
             }
         }
     }
 
     // فتح كورس لطالب معين
-    function adminUnlockCourse(studentId, courseId) {
-        if (!purchasedCourses[studentId]) purchasedCourses[studentId] = [];
-        if (!purchasedCourses[studentId].includes(courseId)) {
-            purchasedCourses[studentId].push(courseId);
-            localStorage.setItem('purchasedCourses', JSON.stringify(purchasedCourses));
-            alert("تم فتح الكورس للطالب بنجاح!");
-            renderApp();
+    async function adminUnlockCourse(studentId, courseId) {
+        const exists = await database.ref(`purchases/${studentId}/${courseId}`).once('value');
+        if (!exists.exists()) {
+            await database.ref(`purchases/${studentId}/${courseId}`).set({
+                courseId: courseId,
+                purchasedAt: new Date().toISOString(),
+                price: 0,
+                unlockedByAdmin: true
+            });
+            alert("✅ تم فتح الكورس للطالب بنجاح!");
         } else {
-            alert("الكورس مفتوح بالفعل!");
+            alert("⚠️ الكورس مفتوح بالفعل!");
         }
     }
 
     // تعديل بيانات الطالب
-    function adminEditStudent(studentId, newName, newPhone, newGrade) {
-        const student = students.find(s => s.id == studentId);
-        if (student) {
-            student.name = newName;
-            student.phone = newPhone;
-            student.grade = newGrade;
-            localStorage.setItem('students', JSON.stringify(students));
-            alert("تم تحديث بيانات الطالب");
-            renderApp();
+    async function adminEditStudent(studentId, newName, newPhone, newGrade) {
+        await database.ref(`students/${studentId}`).update({
+            name: newName,
+            phone: newPhone,
+            grade: newGrade
+        });
+        alert("✅ تم تحديث بيانات الطالب");
+        if (currentUser && currentUser.id == studentId) {
+            currentUser.name = newName;
+            currentUser.phone = newPhone;
+            currentUser.grade = newGrade;
+            localStorage.setItem('currentUserId', currentUser.id);
         }
     }
 
-    // عرض الكورسات للطالب الحالي
-    function renderStudentCourses() {
-        if (!currentUser) return "";
+    // مشاهدة الكورس
+    window.watchCourse = async function(courseId, courseName) {
+        if (!currentUser) return;
+        const purchaseCheck = await database.ref(`purchases/${currentUser.id}/${courseId}`).once('value');
+        if (!purchaseCheck.exists()) {
+            alert("يجب شراء الكورس أولاً!");
+            return;
+        }
+        let videoHTML = `<h3>🎬 ${courseName} - محتوى تعليمي (فيديوهات نموذجية)</h3>`;
+        videoHTML += `<div style="display:grid; gap:20px;">`;
+        for (let i = 1; i <= 5; i++) {
+            videoHTML += `
+                <div style="background:#f7fafc; padding:15px; border-radius:15px;">
+                    <h4>📘 الفصل ${i}</h4>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:10px;">
+            `;
+            for (let v = 1; v <= 5; v++) {
+                videoHTML += `
+                    <div>
+                        <iframe width="100%" height="180" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=example" title="فيديو تعليمي" frameborder="0" allowfullscreen></iframe>
+                        <p style="margin-top:5px">📹 فيديو ${v} : شرح الدرس</p>
+                    </div>
+                `;
+            }
+            videoHTML += `</div></div>`;
+        }
+        videoHTML += `</div><button onclick="renderApp()" class="btn-logout" style="margin-top:20px;">⬅️ رجوع للكورسات</button>`;
+        document.getElementById("mainContent").innerHTML = videoHTML;
+    };
+
+    // عرض الكورسات للطالب
+    async function renderStudentCourses() {
+        if (!currentUser || currentUser.role !== 'student') return "<div class='loading'>📚 جاري تحميل الكورسات...</div>";
         const gradeData = grades[currentUser.grade];
-        if (!gradeData) return "<p>لم يتم تعيين صف لك</p>";
-        const userPurchased = purchasedCourses[currentUser.id] || [];
+        if (!gradeData) return "<p>⚠️ لم يتم تعيين صف لك</p>";
+        
+        const purchasesSnapshot = await database.ref(`purchases/${currentUser.id}`).once('value');
+        const purchasedCourses = purchasesSnapshot.val() || {};
         
         let html = `<h2>📚 كورسات ${gradeData.name}</h2><div class="courses-grid">`;
         gradeData.courses.forEach(course => {
-            const isPurchased = userPurchased.includes(course.id);
+            const isPurchased = purchasedCourses[course.id];
             html += `
                 <div class="course-card">
                     <div class="course-image">${course.image}</div>
@@ -513,44 +598,17 @@
         return html;
     }
 
-    // مشاهدة الكورس (محاكاة الفيديوهات باستخدام YouTube embed)
-    window.watchCourse = function(courseId, courseName) {
-        if (!currentUser) return;
-        const userPurchased = purchasedCourses[currentUser.id] || [];
-        if (!userPurchased.includes(courseId)) {
-            alert("يجب شراء الكورس أولاً!");
-            return;
-        }
-        let videoHTML = `<h3>🎬 ${courseName} - محتوى تعليمي (فيديوهات نموذجية من YouTube)</h3>`;
-        videoHTML += `<div style="display:grid; gap:20px;">`;
-        for (let i = 1; i <= 5; i++) {
-            videoHTML += `
-                <div style="background:#f7fafc; padding:15px; border-radius:15px;">
-                    <h4>الفصل ${i}</h4>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:10px;">
-            `;
-            for (let v = 1; v <= 5; v++) {
-                videoHTML += `
-                    <div>
-                        <iframe width="100%" height="180" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=example" title="فيديو تعليمي" frameborder="0" allowfullscreen></iframe>
-                        <p style="margin-top:5px">📹 فيديو ${v} : شرح درس مهم</p>
-                    </div>
-                `;
-            }
-            videoHTML += `</div></div>`;
-        }
-        videoHTML += `</div><button onclick="renderApp()" class="btn-logout" style="margin-top:20px;">⬅️ رجوع</button>`;
-        document.getElementById("mainContent").innerHTML = videoHTML;
-    };
-
-    // لوحة تحكم الأدمن مع إمكانية إضافة طلاب
-    function renderAdminPanel() {
-        if (!currentUser || currentUser.role !== 'admin') return "";
-        return `
+    // لوحة تحكم الأدمن (مع إضافة طالب)
+    async function renderAdminPanel() {
+        const studentsSnapshot = await database.ref('students').once('value');
+        const allStudents = [];
+        studentsSnapshot.forEach(child => { allStudents.push(child.val()); });
+        
+        let html = `
             <div class="admin-panel">
-                <h2><i class="fas fa-user-shield"></i> لوحة تحكم الأدمن</h2>
+                <h2><i class="fas fa-user-shield"></i> 👑 لوحة تحكم الأدمن - ريل تايم</h2>
                 <div class="admin-section">
-                    <h3>➕ إضافة طالب جديد (يدوي)</h3>
+                    <h3>➕ إضافة طالب جديد</h3>
                     <input type="text" id="adminName" placeholder="الاسم الكامل">
                     <input type="password" id="adminPassword" placeholder="الرقم السري">
                     <select id="adminGrade">
@@ -563,21 +621,15 @@
                     <button onclick="addStudentByAdmin()">➕ إضافة طالب</button>
                 </div>
                 <div class="admin-section">
-                    <h3>📋 قائمة الطلاب</h3>
+                    <h3>📋 قائمة الطلاب (${allStudents.length})</h3>
                     <div class="students-table">
                         <table>
-                            <thead>
-                                <tr><th>الاسم</th><th>الكود</th><th>الصف</th><th>الهاتف</th><th>البريد</th><th>حالة</th><th>إجراءات</th></tr>
-                            </thead>
+                            <thead><tr><th>الاسم</th><th>الكود</th><th>الصف</th><th>الهاتف</th><th>البريد</th><th>الحالة</th><th>إجراءات</th></tr></thead>
                             <tbody>
-                                ${students.map(s => `
+                                ${allStudents.filter(s => s.role !== 'admin').map(s => `
                                     <tr>
-                                        <td>${s.name}</td>
-                                        <td>${s.code}</td>
-                                        <td>${s.grade}</td>
-                                        <td>${s.phone}</td>
-                                        <td>${s.email}</td>
-                                        <td>${s.isBlocked ? '<span class="badge">🚫 محظور</span>' : '<span class="badge">✅ نشط</span>'}</td>
+                                        <td>${s.name}</td><td>${s.code}</td><td>${s.grade}</td><td>${s.phone}</td><td>${s.email}</td>
+                                        <td><span class="badge ${s.isBlocked ? 'badge-blocked' : 'badge-active'}">${s.isBlocked ? '🚫 محظور' : '✅ نشط'}</span></td>
                                         <td>
                                             <button class="admin-btn btn-danger" onclick="toggleBlockStudent(${s.id})">${s.isBlocked ? 'فك الحظر' : 'حظر'}</button>
                                             <button class="admin-btn btn-warning" onclick="showUnlockCourse(${s.id})">🔓 فتح كورس</button>
@@ -591,10 +643,10 @@
                 </div>
             </div>
         `;
+        return html;
     }
 
-    // دوال مساعدة للأدمن
-    window.addStudentByAdmin = function() {
+    window.addStudentByAdmin = async function() {
         const name = document.getElementById('adminName')?.value;
         const password = document.getElementById('adminPassword')?.value;
         const grade = document.getElementById('adminGrade')?.value;
@@ -604,26 +656,36 @@
             alert("يرجى ملء جميع الحقول");
             return;
         }
-        adminAddStudent(name, password, grade, phone, email);
+        await adminAddStudent(name, password, grade, phone, email);
+        renderApp();
     };
 
-    window.showUnlockCourse = function(studentId) {
-        const grade = students.find(s => s.id == studentId)?.grade;
-        const courses = grades[grade]?.courses || [];
-        let courseOptions = courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-        const courseId = prompt(`اختر ID الكورس لفتحه للطالب:\n${courses.map(c => `${c.id}: ${c.name}`).join('\n')}`);
+    window.showUnlockCourse = async function(studentId) {
+        const studentSnap = await database.ref(`students/${studentId}`).once('value');
+        const student = studentSnap.val();
+        const courses = grades[student?.grade]?.courses || [];
+        const courseId = prompt(`اختر ID الكورس لفتحه:\n${courses.map(c => `${c.id}: ${c.name}`).join('\n')}`);
         if (courseId) adminUnlockCourse(studentId, courseId);
     };
 
-    window.showEditStudent = function(studentId) {
-        const student = students.find(s => s.id == studentId);
+    window.showEditStudent = async function(studentId) {
+        const studentSnap = await database.ref(`students/${studentId}`).once('value');
+        const student = studentSnap.val();
         const newName = prompt("الاسم الجديد:", student.name);
         const newPhone = prompt("رقم الهاتف الجديد:", student.phone);
         const newGrade = prompt("الصف الجديد (3اعدادي / 1ثانوي / 2ثانوي):", student.grade);
-        if (newName && newPhone && newGrade) adminEditStudent(studentId, newName, newPhone, newGrade);
+        if (newName && newPhone && newGrade) await adminEditStudent(studentId, newName, newPhone, newGrade);
+        renderApp();
     };
 
-    // صفحات تسجيل الدخول
+    // تسجيل الخروج
+    function logout() {
+        currentUser = null;
+        localStorage.removeItem('currentUserId');
+        renderApp();
+    }
+
+    // واجهة تسجيل الدخول
     function renderAuth() {
         return `
             <div class="form-container">
@@ -659,13 +721,12 @@
         `;
     }
 
-    // المعالجات العامة
-    window.handleLogin = function() {
+    window.handleLogin = async function() {
         const email = document.getElementById('loginEmail').value;
         const pwd = document.getElementById('loginPassword').value;
-        loginStudent(email, pwd);
+        await loginStudent(email, pwd);
     };
-    window.handleRegister = function() {
+    window.handleRegister = async function() {
         const name = document.getElementById('regName').value;
         const pwd = document.getElementById('regPassword').value;
         const grade = document.getElementById('regGrade').value;
@@ -675,64 +736,50 @@
             alert("جميع الحقول مطلوبة");
             return;
         }
-        registerStudent(name, pwd, grade, phone, email);
+        await registerStudent(name, pwd, grade, phone, email);
         showLogin();
     };
-    window.adminLogin = function() {
-        if (!students.some(s => s.role === 'admin')) {
-            students.push({
-                id: 999,
-                name: "Administrator",
-                password: "admin123",
-                email: "admin@platform.com",
-                role: "admin",
-                isBlocked: false,
-                code: "ADMIN001"
-            });
-            localStorage.setItem('students', JSON.stringify(students));
+    window.adminLogin = async function() {
+        await ensureAdminAccount();
+        const snapshot = await database.ref('students').orderByChild('email').equalTo('admin@platform.com').once('value');
+        let admin = null;
+        snapshot.forEach(child => { admin = child.val(); });
+        if (admin) {
+            currentUser = admin;
+            localStorage.setItem('currentUserId', currentUser.id);
+            renderApp();
         }
-        const adminAcc = students.find(s => s.role === 'admin');
-        currentUser = adminAcc;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        renderApp();
     };
     window.showRegister = function() { renderApp('register'); };
     window.showLogin = function() { renderApp('login'); };
     window.toggleBlockStudent = toggleBlockStudent;
+    window.logout = logout;
 
-    function renderApp(page = null) {
+    async function renderApp(page = null) {
+        const storedId = localStorage.getItem('currentUserId');
+        if (storedId && !currentUser) {
+            const snap = await database.ref(`students/${storedId}`).once('value');
+            if (snap.exists()) currentUser = snap.val();
+        }
+        
         const headerUser = currentUser ? `<div class="user-info"><span>👋 ${currentUser.name} ${currentUser.role === 'admin' ? '(أدمن)' : ''}</span><button class="btn-logout" onclick="logout()">تسجيل خروج</button></div>` : `<div></div>`;
         document.getElementById('userHeaderInfo').innerHTML = headerUser;
+        
         let mainHtml = "";
         if (!currentUser) {
             if (page === 'register') mainHtml = renderRegister();
             else mainHtml = renderAuth();
         } else {
             if (currentUser.role === 'admin') {
-                mainHtml = renderAdminPanel() + renderStudentCourses(); // الأدمن يرى الطلاب والكورسات
+                mainHtml = await renderAdminPanel() + await renderStudentCourses();
             } else {
-                mainHtml = renderStudentCourses();
+                mainHtml = await renderStudentCourses();
             }
         }
         document.getElementById('mainContent').innerHTML = mainHtml;
     }
 
-    // التحقق من وجود أدمن تلقائي
-    if (!students.some(s => s.role === 'admin')) {
-        students.push({
-            id: 999,
-            name: "Administrator",
-            password: "admin123",
-            email: "admin@platform.com",
-            role: "admin",
-            isBlocked: false,
-            code: "ADMIN001",
-            phone: "01000000000"
-        });
-        localStorage.setItem('students', JSON.stringify(students));
-    }
-
-    renderApp();
+    ensureAdminAccount().then(() => renderApp());
 </script>
 </body>
 </html>
